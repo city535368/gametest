@@ -13853,274 +13853,6 @@ cr.system_object.prototype.loadFromJSON = function (o)
 	};
 })();
 cr.shaders = {};
-cr.shaders["bumpmapping"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp sampler2D samplerBack;",
-"uniform mediump vec2 destStart;",
-"uniform mediump vec2 destEnd;",
-"uniform mediump float lightx;",
-"uniform mediump float lighty;",
-"uniform mediump float lightz;",
-"uniform mediump float intensity;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"lowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, vTex));",
-"mediump vec3 normal = 2.0 * front.rgb - 1.0;",
-"mediump vec3 light = normalize(vec3(lightx - vTex.x, lighty - vTex.y, lightz));",
-"mediump float diffuse = clamp(dot(normal, light), 0.0, 1.0);",
-"gl_FragColor = intensity * back * diffuse;",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: true,
-	animated: false,
-	parameters: [["lightx", 0, 1], ["lighty", 0, 1], ["lightz", 0, 1], ["intensity", 0, 1]] }
-cr.shaders["dodge"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp sampler2D samplerBack;",
-"uniform mediump vec2 destStart;",
-"uniform mediump vec2 destEnd;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"lowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, vTex));",
-"front.rgb = (back.rgb * front.a) / (1.0 - front.rgb);",
-"gl_FragColor = front * back.a;",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: true,
-	animated: false,
-	parameters: [] }
-cr.shaders["exclusion"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp sampler2D samplerBack;",
-"uniform mediump vec2 destStart;",
-"uniform mediump vec2 destEnd;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"lowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, vTex));",
-"front.rgb = 1.0 - (((1.0 - back.rgb * front.a) * (1.0 - front.rgb)) + (back.rgb * front.a * front.rgb));",
-"gl_FragColor = front;",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: true,
-	animated: false,
-	parameters: [] }
-cr.shaders["glass"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp sampler2D samplerBack;",
-"uniform mediump vec2 destStart;",
-"uniform mediump vec2 destEnd;",
-"uniform mediump float pixelWidth;",
-"uniform mediump float pixelHeight;",
-"uniform mediump float magnification;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"mediump float src = front.r * 0.299 + front.g * 0.587 + front.b * 0.114;",
-"mediump vec3 front2 = texture2D(samplerFront, vTex + vec2(pixelWidth, 0.0)).rgb;",
-"mediump float diffx = src - (front2.r * 0.299 + front2.g * 0.587 + front2.b * 0.114);",
-"mediump vec3 front3 = texture2D(samplerFront, vTex + vec2(0.0, pixelHeight)).rgb;",
-"mediump float diffy = src - (front3.r * 0.299 + front3.g * 0.587 + front3.b * 0.114);",
-"mediump vec2 p = vTex;",
-"p.x += diffx * magnification * pixelWidth * 64.0 * front.a;",
-"p.y += diffy * magnification * pixelHeight * 64.0 * front.a;",
-"gl_FragColor = texture2D(samplerBack, mix(destStart, destEnd, p));",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: true,
-	animated: false,
-	parameters: [["magnification", 0, 1]] }
-cr.shaders["glowhorizontal"] = {src: ["varying mediump vec2 vTex;",
-"uniform mediump sampler2D samplerFront;",
-"uniform mediump float pixelWidth;",
-"uniform mediump float intensity;",
-"void main(void)",
-"{",
-"mediump vec4 sum = vec4(0.0);",
-"mediump float halfPixelWidth = pixelWidth / 2.0;",
-"sum += texture2D(samplerFront, vTex - vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;",
-"sum += texture2D(samplerFront, vTex - vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;",
-"sum += texture2D(samplerFront, vTex - vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;",
-"sum += texture2D(samplerFront, vTex - vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;",
-"mediump vec4 front = texture2D(samplerFront, vTex);",
-"sum += front * 0.10;",
-"sum += texture2D(samplerFront, vTex + vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;",
-"sum += texture2D(samplerFront, vTex + vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;",
-"sum += texture2D(samplerFront, vTex + vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;",
-"sum += texture2D(samplerFront, vTex + vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;",
-"gl_FragColor = mix(front, max(front, sum), intensity);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 8,
-	extendBoxVertical: 0,
-	crossSampling: false,
-	animated: false,
-	parameters: [["intensity", 0, 1]] }
-cr.shaders["glowvertical"] = {src: ["varying mediump vec2 vTex;",
-"uniform mediump sampler2D samplerFront;",
-"uniform mediump float pixelHeight;",
-"uniform mediump float intensity;",
-"void main(void)",
-"{",
-"mediump vec4 sum = vec4(0.0);",
-"mediump float halfPixelHeight = pixelHeight / 2.0;",
-"sum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;",
-"sum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;",
-"sum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;",
-"sum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;",
-"mediump vec4 front = texture2D(samplerFront, vTex);",
-"sum += front * 0.10;",
-"sum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;",
-"sum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;",
-"sum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;",
-"sum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;",
-"gl_FragColor = mix(front, max(front, sum), intensity);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 8,
-	crossSampling: false,
-	animated: false,
-	parameters: [["intensity", 0, 1]] }
-cr.shaders["multiply"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp sampler2D samplerBack;",
-"uniform mediump vec2 destStart;",
-"uniform mediump vec2 destEnd;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"lowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, vTex));",
-"front *= back;",
-"gl_FragColor = front;",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: true,
-	animated: false,
-	parameters: [] }
-cr.shaders["radialblur"] = {src: ["precision mediump float;",
-"varying vec2 vTex;",
-"uniform sampler2D samplerFront;",
-"uniform float pixelWidth;",
-"uniform float pixelHeight;",
-"uniform float intensity;",
-"uniform float radius;",
-"void main(void)",
-"{",
-"vec2 dir = 0.5 - vTex;",
-"float dist = sqrt(dir.x*dir.x + dir.y*dir.y);",
-"dir = dir/dist;",
-"vec4 front = texture2D(samplerFront, vTex);",
-"vec4 sum = front;",
-"sum += texture2D(samplerFront, vTex + dir * -0.08 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * -0.05 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * -0.03 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * -0.02 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * -0.01 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * 0.01 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * 0.02 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * 0.03 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * 0.05 * radius);",
-"sum += texture2D(samplerFront, vTex + dir * 0.08 * radius);",
-"sum /= 11.0;",
-"float t = dist * 2.2;",
-"t = clamp(t, 0.0, 1.0);",
-"gl_FragColor = mix(front, mix(front, sum, t), intensity);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 32,
-	extendBoxVertical: 32,
-	crossSampling: false,
-	animated: false,
-	parameters: [["radius", 0, 1], ["intensity", 0, 1]] }
-cr.shaders["swirl"] = {src: ["#ifdef GL_FRAGMENT_PRECISION_HIGH",
-"#define highmedp highp",
-"#else",
-"#define highmedp mediump",
-"#endif",
-"varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform mediump float radius;",
-"uniform mediump float angle;",
-"void main(void)",
-"{",
-"mediump vec2 center = vec2(0.5, 0.5);",
-"highmedp vec2 tex = vTex;",
-"highmedp float dist = distance(center, vTex);",
-"tex -= center;",
-"if (dist < radius)",
-"{",
-"highmedp float percent = (radius - dist) / radius;",
-"highmedp float theta = percent * percent * angle * 8.0;",
-"highmedp float s = sin(theta);",
-"highmedp float c = cos(theta);",
-"tex = vec2(dot(tex, vec2(c, -s)), dot(tex, vec2(s, c)));",
-"}",
-"tex += center;",
-"gl_FragColor = texture2D(samplerFront, tex);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: false,
-	animated: false,
-	parameters: [["radius", 0, 1], ["angle", 0, 1]] }
-cr.shaders["tint"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform lowp float red;",
-"uniform lowp float green;",
-"uniform lowp float blue;",
-"void main(void)",
-"{",
-"lowp vec4 front = texture2D(samplerFront, vTex);",
-"gl_FragColor = front * vec4(red, green, blue, 1.0);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 0,
-	extendBoxVertical: 0,
-	crossSampling: false,
-	animated: false,
-	parameters: [["red", 0, 1], ["green", 0, 1], ["blue", 0, 1]] }
-cr.shaders["warp"] = {src: ["varying mediump vec2 vTex;",
-"uniform lowp sampler2D samplerFront;",
-"uniform mediump float seconds;",
-"uniform mediump float pixelWidth;",
-"uniform mediump float pixelHeight;",
-"uniform mediump float layerScale;",
-"uniform mediump float freqX;",
-"uniform mediump float freqY;",
-"uniform mediump float ampX;",
-"uniform mediump float ampY;",
-"uniform mediump float speedX;",
-"uniform mediump float speedY;",
-"void main(void)",
-"{",
-"mediump float boxLeft = 0.0;",
-"mediump float boxTop = 0.0;",
-"mediump float aspect = pixelHeight / pixelWidth;",
-"mediump vec2 p = vTex;",
-"p.x += (cos((vTex.y - boxTop) * freqX / layerScale / (pixelWidth * 750.0) + (seconds * speedX)) * ampX * pixelWidth * layerScale);",
-"p.y += (sin((vTex.x - boxLeft) * freqY * aspect / layerScale / (pixelHeight * 750.0) + (seconds * speedY)) * ampY * pixelHeight * layerScale);",
-"gl_FragColor = texture2D(samplerFront, p);",
-"}"
-].join("\n"),
-	extendBoxHorizontal: 25,
-	extendBoxVertical: 25,
-	crossSampling: false,
-	animated: true,
-	parameters: [["freqX", 0, 0], ["freqY", 0, 0], ["ampX", 0, 0], ["ampY", 0, 0], ["speedX", 0, 0], ["speedY", 0, 0]] }
 ;
 ;
 cr.plugins_.Audio = function(runtime)
@@ -17053,6 +16785,743 @@ cr.plugins_.Audio = function(runtime)
 }());
 ;
 ;
+cr.plugins_.Browser = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var pluginProto = cr.plugins_.Browser.prototype;
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	var typeProto = pluginProto.Type.prototype;
+	typeProto.onCreate = function()
+	{
+	};
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	var instanceProto = pluginProto.Instance.prototype;
+	instanceProto.onCreate = function()
+	{
+		var self = this;
+		window.addEventListener("resize", function () {
+			self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnResize, self);
+		});
+		if (typeof navigator.onLine !== "undefined")
+		{
+			window.addEventListener("online", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnOnline, self);
+			});
+			window.addEventListener("offline", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnOffline, self);
+			});
+		}
+		if (typeof window.applicationCache !== "undefined")
+		{
+			window.applicationCache.addEventListener('updateready', function() {
+				self.runtime.loadingprogress = 1;
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnUpdateReady, self);
+			});
+			window.applicationCache.addEventListener('progress', function(e) {
+				self.runtime.loadingprogress = e["loaded"] / e["total"];
+			});
+		}
+		if (!this.runtime.isDirectCanvas)
+		{
+			document.addEventListener("appMobi.device.update.available", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnUpdateReady, self);
+			});
+			document.addEventListener("backbutton", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnBackButton, self);
+			});
+			document.addEventListener("menubutton", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnMenuButton, self);
+			});
+			document.addEventListener("searchbutton", function() {
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnSearchButton, self);
+			});
+			document.addEventListener("tizenhwkey", function (e) {
+				var ret;
+				switch (e["keyName"]) {
+				case "back":
+					ret = self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnBackButton, self);
+					if (!ret)
+					{
+						if (window["tizen"])
+							window["tizen"]["application"]["getCurrentApplication"]()["exit"]();
+					}
+					break;
+				case "menu":
+					ret = self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnMenuButton, self);
+					if (!ret)
+						e.preventDefault();
+					break;
+				}
+			});
+		}
+		if (this.runtime.isWindowsPhone81)
+		{
+			WinJS["Application"]["onbackclick"] = function (e)
+			{
+				return !!self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnBackButton, self);
+			};
+		}
+		this.runtime.addSuspendCallback(function(s) {
+			if (s)
+			{
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnPageHidden, self);
+			}
+			else
+			{
+				self.runtime.trigger(cr.plugins_.Browser.prototype.cnds.OnPageVisible, self);
+			}
+		});
+		this.is_arcade = (typeof window["is_scirra_arcade"] !== "undefined");
+	};
+	var batteryManager = null;
+	var loadedBatteryManager = false;
+	function maybeLoadBatteryManager()
+	{
+		if (loadedBatteryManager)
+			return;
+		if (!navigator["getBattery"])
+			return;
+		var promise = navigator["getBattery"]();
+		loadedBatteryManager = true;
+		if (promise)
+		{
+			promise.then(function (manager) {
+				batteryManager = manager;
+			});
+		}
+	};
+	function Cnds() {};
+	Cnds.prototype.CookiesEnabled = function()
+	{
+		return navigator ? navigator.cookieEnabled : false;
+	};
+	Cnds.prototype.IsOnline = function()
+	{
+		return navigator ? navigator.onLine : false;
+	};
+	Cnds.prototype.HasJava = function()
+	{
+		return navigator ? navigator.javaEnabled() : false;
+	};
+	Cnds.prototype.OnOnline = function()
+	{
+		return true;
+	};
+	Cnds.prototype.OnOffline = function()
+	{
+		return true;
+	};
+	Cnds.prototype.IsDownloadingUpdate = function ()
+	{
+		if (typeof window["applicationCache"] === "undefined")
+			return false;
+		else
+			return window["applicationCache"]["status"] === window["applicationCache"]["DOWNLOADING"];
+	};
+	Cnds.prototype.OnUpdateReady = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.PageVisible = function ()
+	{
+		return !this.runtime.isSuspended;
+	};
+	Cnds.prototype.OnPageVisible = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnPageHidden = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnResize = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.IsFullscreen = function ()
+	{
+		return !!(document["mozFullScreen"] || document["webkitIsFullScreen"] || document["fullScreen"] || this.runtime.isNodeFullscreen);
+	};
+	Cnds.prototype.OnBackButton = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnMenuButton = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnSearchButton = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.IsMetered = function ()
+	{
+		var connection = navigator["connection"] || navigator["mozConnection"] || navigator["webkitConnection"];
+		if (!connection)
+			return false;
+		return !!connection["metered"];
+	};
+	Cnds.prototype.IsCharging = function ()
+	{
+		var battery = navigator["battery"] || navigator["mozBattery"] || navigator["webkitBattery"];
+		if (battery)
+		{
+			return !!battery["charging"]
+		}
+		else
+		{
+			maybeLoadBatteryManager();
+			if (batteryManager)
+			{
+				return !!batteryManager["charging"];
+			}
+			else
+			{
+				return true;		// if unknown, default to charging (powered)
+			}
+		}
+	};
+	Cnds.prototype.IsPortraitLandscape = function (p)
+	{
+		var current = (window.innerWidth <= window.innerHeight ? 0 : 1);
+		return current === p;
+	};
+	Cnds.prototype.SupportsFullscreen = function ()
+	{
+		if (this.runtime.isNodeWebkit)
+			return true;
+		var elem = this.runtime.canvasdiv || this.runtime.canvas;
+		return !!(elem["requestFullscreen"] || elem["mozRequestFullScreen"] || elem["msRequestFullscreen"] || elem["webkitRequestFullScreen"]);
+	};
+	pluginProto.cnds = new Cnds();
+	function Acts() {};
+	Acts.prototype.Alert = function (msg)
+	{
+		if (!this.runtime.isDomFree)
+			alert(msg.toString());
+	};
+	Acts.prototype.Close = function ()
+	{
+		if (this.runtime.isCocoonJs)
+			CocoonJS["App"]["forceToFinish"]();
+		else if (window["tizen"])
+			window["tizen"]["application"]["getCurrentApplication"]()["exit"]();
+		else if (navigator["app"] && navigator["app"]["exitApp"])
+			navigator["app"]["exitApp"]();
+		else if (navigator["device"] && navigator["device"]["exitApp"])
+			navigator["device"]["exitApp"]();
+		else if (!this.is_arcade && !this.runtime.isDomFree)
+			window.close();
+	};
+	Acts.prototype.Focus = function ()
+	{
+		if (this.runtime.isNodeWebkit)
+		{
+			var win = window["nwgui"]["Window"]["get"]();
+			win["focus"]();
+		}
+		else if (!this.is_arcade && !this.runtime.isDomFree)
+			window.focus();
+	};
+	Acts.prototype.Blur = function ()
+	{
+		if (this.runtime.isNodeWebkit)
+		{
+			var win = window["nwgui"]["Window"]["get"]();
+			win["blur"]();
+		}
+		else if (!this.is_arcade && !this.runtime.isDomFree)
+			window.blur();
+	};
+	Acts.prototype.GoBack = function ()
+	{
+		if (navigator["app"] && navigator["app"]["backHistory"])
+			navigator["app"]["backHistory"]();
+		else if (!this.is_arcade && !this.runtime.isDomFree && window.back)
+			window.back();
+	};
+	Acts.prototype.GoForward = function ()
+	{
+		if (!this.is_arcade && !this.runtime.isDomFree && window.forward)
+			window.forward();
+	};
+	Acts.prototype.GoHome = function ()
+	{
+		if (!this.is_arcade && !this.runtime.isDomFree && window.home)
+			window.home();
+	};
+	Acts.prototype.GoToURL = function (url, target)
+	{
+		if (this.runtime.isCocoonJs)
+			CocoonJS["App"]["openURL"](url);
+		else if (this.runtime.isEjecta)
+			ejecta["openURL"](url);
+		else if (this.runtime.isWinJS)
+			Windows["System"]["Launcher"]["launchUriAsync"](new Windows["Foundation"]["Uri"](url));
+		else if (navigator["app"] && navigator["app"]["loadUrl"])
+			navigator["app"]["loadUrl"](url, { "openExternal": true });
+		else if (this.runtime.isCordova)
+			window.open(url, "_system");
+		else if (!this.is_arcade && !this.runtime.isDomFree)
+		{
+			if (target === 2 && !this.is_arcade)		// top
+				window.top.location = url;
+			else if (target === 1 && !this.is_arcade)	// parent
+				window.parent.location = url;
+			else					// self
+				window.location = url;
+		}
+	};
+	Acts.prototype.GoToURLWindow = function (url, tag)
+	{
+		if (this.runtime.isCocoonJs)
+			CocoonJS["App"]["openURL"](url);
+		else if (this.runtime.isEjecta)
+			ejecta["openURL"](url);
+		else if (this.runtime.isWinJS)
+			Windows["System"]["Launcher"]["launchUriAsync"](new Windows["Foundation"]["Uri"](url));
+		else if (navigator["app"] && navigator["app"]["loadUrl"])
+			navigator["app"]["loadUrl"](url, { "openExternal": true });
+		else if (this.runtime.isCordova)
+			window.open(url, "_system");
+		else if (!this.is_arcade && !this.runtime.isDomFree)
+			window.open(url, tag);
+	};
+	Acts.prototype.Reload = function ()
+	{
+		if (!this.is_arcade && !this.runtime.isDomFree)
+			window.location.reload();
+	};
+	var firstRequestFullscreen = true;
+	var crruntime = null;
+	function onFullscreenError(e)
+	{
+		if (console && console.warn)
+			console.warn("Fullscreen request failed: ", e);
+		crruntime["setSize"](window.innerWidth, window.innerHeight);
+	};
+	Acts.prototype.RequestFullScreen = function (stretchmode)
+	{
+		if (this.runtime.isDomFree)
+		{
+			cr.logexport("[Construct 2] Requesting fullscreen is not supported on this platform - the request has been ignored");
+			return;
+		}
+		if (stretchmode >= 2)
+			stretchmode += 1;
+		if (stretchmode === 6)
+			stretchmode = 2;
+		if (this.runtime.isNodeWebkit)
+		{
+			if (this.runtime.isDebug)
+			{
+				debuggerFullscreen(true);
+			}
+			else if (!this.runtime.isNodeFullscreen && window["nwgui"])
+			{
+				window["nwgui"]["Window"]["get"]()["enterFullscreen"]();
+				this.runtime.isNodeFullscreen = true;
+				this.runtime.fullscreen_scaling = (stretchmode >= 2 ? stretchmode : 0);
+			}
+		}
+		else
+		{
+			if (document["mozFullScreen"] || document["webkitIsFullScreen"] || !!document["msFullscreenElement"] || document["fullScreen"] || document["fullScreenElement"])
+			{
+				return;
+			}
+			this.runtime.fullscreen_scaling = (stretchmode >= 2 ? stretchmode : 0);
+			var elem = this.runtime.canvasdiv || this.runtime.canvas;
+			if (firstRequestFullscreen)
+			{
+				firstRequestFullscreen = false;
+				crruntime = this.runtime;
+				elem.addEventListener("mozfullscreenerror", onFullscreenError);
+				elem.addEventListener("webkitfullscreenerror", onFullscreenError);
+				elem.addEventListener("MSFullscreenError", onFullscreenError);
+				elem.addEventListener("fullscreenerror", onFullscreenError);
+			}
+			if (elem["requestFullscreen"])
+				elem["requestFullscreen"]();
+			else if (elem["mozRequestFullScreen"])
+				elem["mozRequestFullScreen"]();
+			else if (elem["msRequestFullscreen"])
+				elem["msRequestFullscreen"]();
+			else if (elem["webkitRequestFullScreen"])
+			{
+				if (typeof Element !== "undefined" && typeof Element["ALLOW_KEYBOARD_INPUT"] !== "undefined")
+					elem["webkitRequestFullScreen"](Element["ALLOW_KEYBOARD_INPUT"]);
+				else
+					elem["webkitRequestFullScreen"]();
+			}
+		}
+	};
+	Acts.prototype.CancelFullScreen = function ()
+	{
+		if (this.runtime.isDomFree)
+		{
+			cr.logexport("[Construct 2] Exiting fullscreen is not supported on this platform - the request has been ignored");
+			return;
+		}
+		if (this.runtime.isNodeWebkit)
+		{
+			if (this.runtime.isDebug)
+			{
+				debuggerFullscreen(false);
+			}
+			else if (this.runtime.isNodeFullscreen && window["nwgui"])
+			{
+				window["nwgui"]["Window"]["get"]()["leaveFullscreen"]();
+				this.runtime.isNodeFullscreen = false;
+			}
+		}
+		else
+		{
+			if (document["exitFullscreen"])
+				document["exitFullscreen"]();
+			else if (document["mozCancelFullScreen"])
+				document["mozCancelFullScreen"]();
+			else if (document["msExitFullscreen"])
+				document["msExitFullscreen"]();
+			else if (document["webkitCancelFullScreen"])
+				document["webkitCancelFullScreen"]();
+		}
+	};
+	Acts.prototype.Vibrate = function (pattern_)
+	{
+		try {
+			var arr = pattern_.split(",");
+			var i, len;
+			for (i = 0, len = arr.length; i < len; i++)
+			{
+				arr[i] = parseInt(arr[i], 10);
+			}
+			if (navigator["vibrate"])
+				navigator["vibrate"](arr);
+			else if (navigator["mozVibrate"])
+				navigator["mozVibrate"](arr);
+			else if (navigator["webkitVibrate"])
+				navigator["webkitVibrate"](arr);
+			else if (navigator["msVibrate"])
+				navigator["msVibrate"](arr);
+		}
+		catch (e) {}
+	};
+	Acts.prototype.InvokeDownload = function (url_, filename_)
+	{
+		var a = document.createElement("a");
+		if (typeof a["download"] === "undefined")
+		{
+			window.open(url_);
+		}
+		else
+		{
+			var body = document.getElementsByTagName("body")[0];
+			a.textContent = filename_;
+			a.href = url_;
+			a["download"] = filename_;
+			body.appendChild(a);
+			var clickEvent = document.createEvent("MouseEvent");
+			clickEvent.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+			a.dispatchEvent(clickEvent);
+			body.removeChild(a);
+		}
+	};
+	Acts.prototype.InvokeDownloadString = function (str_, mimetype_, filename_)
+	{
+		var datauri = "data:" + mimetype_ + "," + encodeURIComponent(str_);
+		var a = document.createElement("a");
+		if (typeof a["download"] === "undefined")
+		{
+			window.open(datauri);
+		}
+		else
+		{
+			var body = document.getElementsByTagName("body")[0];
+			a.textContent = filename_;
+			a.href = datauri;
+			a["download"] = filename_;
+			body.appendChild(a);
+			var clickEvent = document.createEvent("MouseEvent");
+			clickEvent.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+			a.dispatchEvent(clickEvent);
+			body.removeChild(a);
+		}
+	};
+	Acts.prototype.ConsoleLog = function (type_, msg_)
+	{
+		if (typeof console === "undefined")
+			return;
+		if (type_ === 0 && console.log)
+			console.log(msg_.toString());
+		if (type_ === 1 && console.warn)
+			console.warn(msg_.toString());
+		if (type_ === 2 && console.error)
+			console.error(msg_.toString());
+	};
+	Acts.prototype.ConsoleGroup = function (name_)
+	{
+		if (console && console.group)
+			console.group(name_);
+	};
+	Acts.prototype.ConsoleGroupEnd = function ()
+	{
+		if (console && console.groupEnd)
+			console.groupEnd();
+	};
+	Acts.prototype.ExecJs = function (js_)
+	{
+		try {
+			if (eval)
+				eval(js_);
+		}
+		catch (e)
+		{
+			if (console && console.error)
+				console.error("Error executing Javascript: ", e);
+		}
+	};
+	var orientations = [
+		"portrait",
+		"landscape",
+		"portrait-primary",
+		"portrait-secondary",
+		"landscape-primary",
+		"landscape-secondary"
+	];
+	Acts.prototype.LockOrientation = function (o)
+	{
+		o = Math.floor(o);
+		if (o < 0 || o >= orientations.length)
+			return;
+		this.runtime.autoLockOrientation = false;
+		var orientation = orientations[o];
+		if (screen["orientation"] && screen["orientation"]["lock"])
+			screen["orientation"]["lock"](orientation);
+		else if (screen["lockOrientation"])
+			screen["lockOrientation"](orientation);
+		else if (screen["webkitLockOrientation"])
+			screen["webkitLockOrientation"](orientation);
+		else if (screen["mozLockOrientation"])
+			screen["mozLockOrientation"](orientation);
+		else if (screen["msLockOrientation"])
+			screen["msLockOrientation"](orientation);
+	};
+	Acts.prototype.UnlockOrientation = function ()
+	{
+		this.runtime.autoLockOrientation = false;
+		if (screen["orientation"] && screen["orientation"]["unlock"])
+			screen["orientation"]["unlock"]();
+		else if (screen["unlockOrientation"])
+			screen["unlockOrientation"]();
+		else if (screen["webkitUnlockOrientation"])
+			screen["webkitUnlockOrientation"]();
+		else if (screen["mozUnlockOrientation"])
+			screen["mozUnlockOrientation"]();
+		else if (screen["msUnlockOrientation"])
+			screen["msUnlockOrientation"]();
+	};
+	pluginProto.acts = new Acts();
+	function Exps() {};
+	Exps.prototype.URL = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.toString());
+	};
+	Exps.prototype.Protocol = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.protocol);
+	};
+	Exps.prototype.Domain = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.hostname);
+	};
+	Exps.prototype.PathName = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.pathname);
+	};
+	Exps.prototype.Hash = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.hash);
+	};
+	Exps.prototype.Referrer = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : document.referrer);
+	};
+	Exps.prototype.Title = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : document.title);
+	};
+	Exps.prototype.Name = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : navigator.appName);
+	};
+	Exps.prototype.Version = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : navigator.appVersion);
+	};
+	Exps.prototype.Language = function (ret)
+	{
+		if (navigator && navigator.language)
+			ret.set_string(navigator.language);
+		else
+			ret.set_string("");
+	};
+	Exps.prototype.Platform = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : navigator.platform);
+	};
+	Exps.prototype.Product = function (ret)
+	{
+		if (navigator && navigator.product)
+			ret.set_string(navigator.product);
+		else
+			ret.set_string("");
+	};
+	Exps.prototype.Vendor = function (ret)
+	{
+		if (navigator && navigator.vendor)
+			ret.set_string(navigator.vendor);
+		else
+			ret.set_string("");
+	};
+	Exps.prototype.UserAgent = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : navigator.userAgent);
+	};
+	Exps.prototype.QueryString = function (ret)
+	{
+		ret.set_string(this.runtime.isDomFree ? "" : window.location.search);
+	};
+	Exps.prototype.QueryParam = function (ret, paramname)
+	{
+		if (this.runtime.isDomFree)
+		{
+			ret.set_string("");
+			return;
+		}
+		var match = RegExp('[?&]' + paramname + '=([^&]*)').exec(window.location.search);
+		if (match)
+			ret.set_string(decodeURIComponent(match[1].replace(/\+/g, ' ')));
+		else
+			ret.set_string("");
+	};
+	Exps.prototype.Bandwidth = function (ret)
+	{
+		var connection = navigator["connection"] || navigator["mozConnection"] || navigator["webkitConnection"];
+		if (!connection)
+			ret.set_float(Number.POSITIVE_INFINITY);
+		else
+		{
+			if (typeof connection["bandwidth"] !== "undefined")
+				ret.set_float(connection["bandwidth"]);
+			else if (typeof connection["downlinkMax"] !== "undefined")
+				ret.set_float(connection["downlinkMax"]);
+			else
+				ret.set_float(Number.POSITIVE_INFINITY);
+		}
+	};
+	Exps.prototype.ConnectionType = function (ret)
+	{
+		var connection = navigator["connection"] || navigator["mozConnection"] || navigator["webkitConnection"];
+		if (!connection)
+			ret.set_string("unknown");
+		else
+		{
+			ret.set_string(connection["type"] || "unknown");
+		}
+	};
+	Exps.prototype.BatteryLevel = function (ret)
+	{
+		var battery = navigator["battery"] || navigator["mozBattery"] || navigator["webkitBattery"];
+		if (battery)
+		{
+			ret.set_float(battery["level"]);
+		}
+		else
+		{
+			maybeLoadBatteryManager();
+			if (batteryManager)
+			{
+				ret.set_float(batteryManager["level"]);
+			}
+			else
+			{
+				ret.set_float(1);		// not supported/unknown: assume charged
+			}
+		}
+	};
+	Exps.prototype.BatteryTimeLeft = function (ret)
+	{
+		var battery = navigator["battery"] || navigator["mozBattery"] || navigator["webkitBattery"];
+		if (battery)
+		{
+			ret.set_float(battery["dischargingTime"]);
+		}
+		else
+		{
+			maybeLoadBatteryManager();
+			if (batteryManager)
+			{
+				ret.set_float(batteryManager["dischargingTime"]);
+			}
+			else
+			{
+				ret.set_float(Number.POSITIVE_INFINITY);		// not supported/unknown: assume infinite time left
+			}
+		}
+	};
+	Exps.prototype.ExecJS = function (ret, js_)
+	{
+		if (!eval)
+		{
+			ret.set_any(0);
+			return;
+		}
+		var result = 0;
+		try {
+			result = eval(js_);
+		}
+		catch (e)
+		{
+			if (console && console.error)
+				console.error("Error executing Javascript: ", e);
+		}
+		if (typeof result === "number")
+			ret.set_any(result);
+		else if (typeof result === "string")
+			ret.set_any(result);
+		else if (typeof result === "boolean")
+			ret.set_any(result ? 1 : 0);
+		else
+			ret.set_any(0);
+	};
+	Exps.prototype.ScreenWidth = function (ret)
+	{
+		ret.set_int(screen.width);
+	};
+	Exps.prototype.ScreenHeight = function (ret)
+	{
+		ret.set_int(screen.height);
+	};
+	Exps.prototype.DevicePixelRatio = function (ret)
+	{
+		ret.set_float(this.runtime.devicePixelRatio);
+	};
+	pluginProto.exps = new Exps();
+}());
+;
+;
 cr.plugins_.Keyboard = function(runtime)
 {
 	this.runtime = runtime;
@@ -17265,265 +17734,6 @@ cr.plugins_.Keyboard = function(runtime)
 	Exps.prototype.StringFromKeyCode = function (ret, kc)
 	{
 		ret.set_string(fixedStringFromCharCode(kc));
-	};
-	pluginProto.exps = new Exps();
-}());
-;
-;
-cr.plugins_.Mouse = function(runtime)
-{
-	this.runtime = runtime;
-};
-(function ()
-{
-	var pluginProto = cr.plugins_.Mouse.prototype;
-	pluginProto.Type = function(plugin)
-	{
-		this.plugin = plugin;
-		this.runtime = plugin.runtime;
-	};
-	var typeProto = pluginProto.Type.prototype;
-	typeProto.onCreate = function()
-	{
-	};
-	pluginProto.Instance = function(type)
-	{
-		this.type = type;
-		this.runtime = type.runtime;
-		this.buttonMap = new Array(4);		// mouse down states
-		this.mouseXcanvas = 0;				// mouse position relative to canvas
-		this.mouseYcanvas = 0;
-		this.triggerButton = 0;
-		this.triggerType = 0;
-		this.triggerDir = 0;
-		this.handled = false;
-	};
-	var instanceProto = pluginProto.Instance.prototype;
-	instanceProto.onCreate = function()
-	{
-		var self = this;
-		if (!this.runtime.isDomFree)
-		{
-			jQuery(document).mousemove(
-				function(info) {
-					self.onMouseMove(info);
-				}
-			);
-			jQuery(document).mousedown(
-				function(info) {
-					self.onMouseDown(info);
-				}
-			);
-			jQuery(document).mouseup(
-				function(info) {
-					self.onMouseUp(info);
-				}
-			);
-			jQuery(document).dblclick(
-				function(info) {
-					self.onDoubleClick(info);
-				}
-			);
-			var wheelevent = function(info) {
-								self.onWheel(info);
-							};
-			document.addEventListener("mousewheel", wheelevent, false);
-			document.addEventListener("DOMMouseScroll", wheelevent, false);
-		}
-	};
-	var dummyoffset = {left: 0, top: 0};
-	instanceProto.onMouseMove = function(info)
-	{
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
-		this.mouseXcanvas = info.pageX - offset.left;
-		this.mouseYcanvas = info.pageY - offset.top;
-	};
-	instanceProto.mouseInGame = function ()
-	{
-		if (this.runtime.fullscreen_mode > 0)
-			return true;
-		return this.mouseXcanvas >= 0 && this.mouseYcanvas >= 0
-		    && this.mouseXcanvas < this.runtime.width && this.mouseYcanvas < this.runtime.height;
-	};
-	instanceProto.onMouseDown = function(info)
-	{
-		if (!this.mouseInGame())
-			return;
-		if (this.runtime.had_a_click && !this.runtime.isMobile)
-			info.preventDefault();
-		this.buttonMap[info.which] = true;
-		this.runtime.isInUserInputEvent = true;
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnAnyClick, this);
-		this.triggerButton = info.which - 1;	// 1-based
-		this.triggerType = 0;					// single click
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnClick, this);
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnObjectClicked, this);
-		this.runtime.isInUserInputEvent = false;
-	};
-	instanceProto.onMouseUp = function(info)
-	{
-		if (!this.buttonMap[info.which])
-			return;
-		if (this.runtime.had_a_click && !this.runtime.isMobile)
-			info.preventDefault();
-		this.runtime.had_a_click = true;
-		this.buttonMap[info.which] = false;
-		this.runtime.isInUserInputEvent = true;
-		this.triggerButton = info.which - 1;	// 1-based
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnRelease, this);
-		this.runtime.isInUserInputEvent = false;
-	};
-	instanceProto.onDoubleClick = function(info)
-	{
-		if (!this.mouseInGame())
-			return;
-		info.preventDefault();
-		this.runtime.isInUserInputEvent = true;
-		this.triggerButton = info.which - 1;	// 1-based
-		this.triggerType = 1;					// double click
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnClick, this);
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnObjectClicked, this);
-		this.runtime.isInUserInputEvent = false;
-	};
-	instanceProto.onWheel = function (info)
-	{
-		var delta = info.wheelDelta ? info.wheelDelta : info.detail ? -info.detail : 0;
-		this.triggerDir = (delta < 0 ? 0 : 1);
-		this.handled = false;
-		this.runtime.isInUserInputEvent = true;
-		this.runtime.trigger(cr.plugins_.Mouse.prototype.cnds.OnWheel, this);
-		this.runtime.isInUserInputEvent = false;
-		if (this.handled && cr.isCanvasInputEvent(info))
-			info.preventDefault();
-	};
-	function Cnds() {};
-	Cnds.prototype.OnClick = function (button, type)
-	{
-		return button === this.triggerButton && type === this.triggerType;
-	};
-	Cnds.prototype.OnAnyClick = function ()
-	{
-		return true;
-	};
-	Cnds.prototype.IsButtonDown = function (button)
-	{
-		return this.buttonMap[button + 1];	// jQuery uses 1-based buttons for some reason
-	};
-	Cnds.prototype.OnRelease = function (button)
-	{
-		return button === this.triggerButton;
-	};
-	Cnds.prototype.IsOverObject = function (obj)
-	{
-		var cnd = this.runtime.getCurrentCondition();
-		var mx = this.mouseXcanvas;
-		var my = this.mouseYcanvas;
-		return cr.xor(this.runtime.testAndSelectCanvasPointOverlap(obj, mx, my, cnd.inverted), cnd.inverted);
-	};
-	Cnds.prototype.OnObjectClicked = function (button, type, obj)
-	{
-		if (button !== this.triggerButton || type !== this.triggerType)
-			return false;	// wrong click type
-		return this.runtime.testAndSelectCanvasPointOverlap(obj, this.mouseXcanvas, this.mouseYcanvas, false);
-	};
-	Cnds.prototype.OnWheel = function (dir)
-	{
-		this.handled = true;
-		return dir === this.triggerDir;
-	};
-	pluginProto.cnds = new Cnds();
-	function Acts() {};
-	Acts.prototype.SetCursor = function (c)
-	{
-		var cursor_style = ["auto", "pointer", "text", "crosshair", "move", "help", "wait", "none"][c];
-		if (this.runtime.canvas && this.runtime.canvas.style)
-			this.runtime.canvas.style.cursor = cursor_style;
-	};
-	Acts.prototype.SetCursorSprite = function (obj)
-	{
-		if (this.runtime.isDomFree || this.runtime.isMobile || !obj)
-			return;
-		var inst = obj.getFirstPicked();
-		if (!inst || !inst.curFrame)
-			return;
-		var frame = inst.curFrame;
-		var datauri = frame.getDataUri();
-		var cursor_style = "url(" + datauri + ") " + Math.round(frame.hotspotX * frame.width) + " " + Math.round(frame.hotspotY * frame.height) + ", auto";
-		jQuery(this.runtime.canvas).css("cursor", cursor_style);
-	};
-	pluginProto.acts = new Acts();
-	function Exps() {};
-	Exps.prototype.X = function (ret, layerparam)
-	{
-		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
-		if (cr.is_undefined(layerparam))
-		{
-			layer = this.runtime.getLayerByNumber(0);
-			oldScale = layer.scale;
-			oldZoomRate = layer.zoomRate;
-			oldParallaxX = layer.parallaxX;
-			oldAngle = layer.angle;
-			layer.scale = 1;
-			layer.zoomRate = 1.0;
-			layer.parallaxX = 1.0;
-			layer.angle = 0;
-			ret.set_float(layer.canvasToLayer(this.mouseXcanvas, this.mouseYcanvas, true));
-			layer.scale = oldScale;
-			layer.zoomRate = oldZoomRate;
-			layer.parallaxX = oldParallaxX;
-			layer.angle = oldAngle;
-		}
-		else
-		{
-			if (cr.is_number(layerparam))
-				layer = this.runtime.getLayerByNumber(layerparam);
-			else
-				layer = this.runtime.getLayerByName(layerparam);
-			if (layer)
-				ret.set_float(layer.canvasToLayer(this.mouseXcanvas, this.mouseYcanvas, true));
-			else
-				ret.set_float(0);
-		}
-	};
-	Exps.prototype.Y = function (ret, layerparam)
-	{
-		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
-		if (cr.is_undefined(layerparam))
-		{
-			layer = this.runtime.getLayerByNumber(0);
-			oldScale = layer.scale;
-			oldZoomRate = layer.zoomRate;
-			oldParallaxY = layer.parallaxY;
-			oldAngle = layer.angle;
-			layer.scale = 1;
-			layer.zoomRate = 1.0;
-			layer.parallaxY = 1.0;
-			layer.angle = 0;
-			ret.set_float(layer.canvasToLayer(this.mouseXcanvas, this.mouseYcanvas, false));
-			layer.scale = oldScale;
-			layer.zoomRate = oldZoomRate;
-			layer.parallaxY = oldParallaxY;
-			layer.angle = oldAngle;
-		}
-		else
-		{
-			if (cr.is_number(layerparam))
-				layer = this.runtime.getLayerByNumber(layerparam);
-			else
-				layer = this.runtime.getLayerByName(layerparam);
-			if (layer)
-				ret.set_float(layer.canvasToLayer(this.mouseXcanvas, this.mouseYcanvas, false));
-			else
-				ret.set_float(0);
-		}
-	};
-	Exps.prototype.AbsoluteX = function (ret)
-	{
-		ret.set_float(this.mouseXcanvas);
-	};
-	Exps.prototype.AbsoluteY = function (ret)
-	{
-		ret.set_float(this.mouseYcanvas);
 	};
 	pluginProto.exps = new Exps();
 }());
@@ -19551,6 +19761,1304 @@ cr.plugins_.TiledBg = function(runtime)
 }());
 ;
 ;
+cr.plugins_.Touch = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var pluginProto = cr.plugins_.Touch.prototype;
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	var typeProto = pluginProto.Type.prototype;
+	typeProto.onCreate = function()
+	{
+	};
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+		this.touches = [];
+		this.mouseDown = false;
+	};
+	var instanceProto = pluginProto.Instance.prototype;
+	var dummyoffset = {left: 0, top: 0};
+	instanceProto.findTouch = function (id)
+	{
+		var i, len;
+		for (i = 0, len = this.touches.length; i < len; i++)
+		{
+			if (this.touches[i]["id"] === id)
+				return i;
+		}
+		return -1;
+	};
+	var appmobi_accx = 0;
+	var appmobi_accy = 0;
+	var appmobi_accz = 0;
+	function AppMobiGetAcceleration(evt)
+	{
+		appmobi_accx = evt.x;
+		appmobi_accy = evt.y;
+		appmobi_accz = evt.z;
+	};
+	var pg_accx = 0;
+	var pg_accy = 0;
+	var pg_accz = 0;
+	function PhoneGapGetAcceleration(evt)
+	{
+		pg_accx = evt.x;
+		pg_accy = evt.y;
+		pg_accz = evt.z;
+	};
+	var theInstance = null;
+	var touchinfo_cache = [];
+	function AllocTouchInfo(x, y, id, index)
+	{
+		var ret;
+		if (touchinfo_cache.length)
+			ret = touchinfo_cache.pop();
+		else
+			ret = new TouchInfo();
+		ret.init(x, y, id, index);
+		return ret;
+	};
+	function ReleaseTouchInfo(ti)
+	{
+		if (touchinfo_cache.length < 100)
+			touchinfo_cache.push(ti);
+	};
+	var GESTURE_HOLD_THRESHOLD = 15;		// max px motion for hold gesture to register
+	var GESTURE_HOLD_TIMEOUT = 500;			// time for hold gesture to register
+	var GESTURE_TAP_TIMEOUT = 333;			// time for tap gesture to register
+	var GESTURE_DOUBLETAP_THRESHOLD = 25;	// max distance apart for taps to be
+	function TouchInfo()
+	{
+		this.starttime = 0;
+		this.time = 0;
+		this.lasttime = 0;
+		this.startx = 0;
+		this.starty = 0;
+		this.x = 0;
+		this.y = 0;
+		this.lastx = 0;
+		this.lasty = 0;
+		this["id"] = 0;
+		this.startindex = 0;
+		this.triggeredHold = false;
+		this.tooFarForHold = false;
+	};
+	TouchInfo.prototype.init = function (x, y, id, index)
+	{
+		var nowtime = cr.performance_now();
+		this.time = nowtime;
+		this.lasttime = nowtime;
+		this.starttime = nowtime;
+		this.startx = x;
+		this.starty = y;
+		this.x = x;
+		this.y = y;
+		this.lastx = x;
+		this.lasty = y;
+		this["id"] = id;
+		this.startindex = index;
+		this.triggeredHold = false;
+		this.tooFarForHold = false;
+	};
+	TouchInfo.prototype.update = function (nowtime, x, y)
+	{
+		this.lasttime = this.time;
+		this.time = nowtime;
+		this.lastx = this.x;
+		this.lasty = this.y;
+		this.x = x;
+		this.y = y;
+		if (!this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) >= GESTURE_HOLD_THRESHOLD)
+		{
+			this.tooFarForHold = true;
+		}
+	};
+	TouchInfo.prototype.maybeTriggerHold = function (inst, index)
+	{
+		if (this.triggeredHold)
+			return;		// already triggered this gesture
+		var nowtime = cr.performance_now();
+		if (nowtime - this.starttime >= GESTURE_HOLD_TIMEOUT && !this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) < GESTURE_HOLD_THRESHOLD)
+		{
+			this.triggeredHold = true;
+			inst.trigger_index = this.startindex;
+			inst.trigger_id = this["id"];
+			inst.getTouchIndex = index;
+			inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnHoldGesture, inst);
+			inst.curTouchX = this.x;
+			inst.curTouchY = this.y;
+			inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnHoldGestureObject, inst);
+			inst.getTouchIndex = 0;
+		}
+	};
+	var lastTapX = -1000;
+	var lastTapY = -1000;
+	var lastTapTime = -10000;
+	TouchInfo.prototype.maybeTriggerTap = function (inst, index)
+	{
+		if (this.triggeredHold)
+			return;
+		var nowtime = cr.performance_now();
+		if (nowtime - this.starttime <= GESTURE_TAP_TIMEOUT && !this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) < GESTURE_HOLD_THRESHOLD)
+		{
+			inst.trigger_index = this.startindex;
+			inst.trigger_id = this["id"];
+			inst.getTouchIndex = index;
+			if ((nowtime - lastTapTime <= GESTURE_TAP_TIMEOUT * 2) && cr.distanceTo(lastTapX, lastTapY, this.x, this.y) < GESTURE_DOUBLETAP_THRESHOLD)
+			{
+				inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnDoubleTapGesture, inst);
+				inst.curTouchX = this.x;
+				inst.curTouchY = this.y;
+				inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnDoubleTapGestureObject, inst);
+				lastTapX = -1000;
+				lastTapY = -1000;
+				lastTapTime = -10000;
+			}
+			else
+			{
+				inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTapGesture, inst);
+				inst.curTouchX = this.x;
+				inst.curTouchY = this.y;
+				inst.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTapGestureObject, inst);
+				lastTapX = this.x;
+				lastTapY = this.y;
+				lastTapTime = nowtime;
+			}
+			inst.getTouchIndex = 0;
+		}
+	};
+	instanceProto.onCreate = function()
+	{
+		theInstance = this;
+		this.isWindows8 = !!(typeof window["c2isWindows8"] !== "undefined" && window["c2isWindows8"]);
+		this.orient_alpha = 0;
+		this.orient_beta = 0;
+		this.orient_gamma = 0;
+		this.acc_g_x = 0;
+		this.acc_g_y = 0;
+		this.acc_g_z = 0;
+		this.acc_x = 0;
+		this.acc_y = 0;
+		this.acc_z = 0;
+		this.curTouchX = 0;
+		this.curTouchY = 0;
+		this.trigger_index = 0;
+		this.trigger_id = 0;
+		this.getTouchIndex = 0;
+		this.useMouseInput = (this.properties[0] !== 0);
+		var elem = (this.runtime.fullscreen_mode > 0) ? document : this.runtime.canvas;
+		var elem2 = document;
+		if (this.runtime.isDirectCanvas)
+			elem2 = elem = window["Canvas"];
+		else if (this.runtime.isCocoonJs)
+			elem2 = elem = window;
+		var self = this;
+		if (window.navigator["pointerEnabled"])
+		{
+			elem.addEventListener("pointerdown",
+				function(info) {
+					self.onPointerStart(info);
+				},
+				false
+			);
+			elem.addEventListener("pointermove",
+				function(info) {
+					self.onPointerMove(info);
+				},
+				false
+			);
+			elem2.addEventListener("pointerup",
+				function(info) {
+					self.onPointerEnd(info, false);
+				},
+				false
+			);
+			elem2.addEventListener("pointercancel",
+				function(info) {
+					self.onPointerEnd(info, true);
+				},
+				false
+			);
+			if (this.runtime.canvas)
+			{
+				this.runtime.canvas.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				this.runtime.canvas.addEventListener("gesturehold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("gesturehold", function(e) {
+					e.preventDefault();
+				}, false);
+			}
+		}
+		else if (window.navigator["msPointerEnabled"])
+		{
+			elem.addEventListener("MSPointerDown",
+				function(info) {
+					self.onPointerStart(info);
+				},
+				false
+			);
+			elem.addEventListener("MSPointerMove",
+				function(info) {
+					self.onPointerMove(info);
+				},
+				false
+			);
+			elem2.addEventListener("MSPointerUp",
+				function(info) {
+					self.onPointerEnd(info, false);
+				},
+				false
+			);
+			elem2.addEventListener("MSPointerCancel",
+				function(info) {
+					self.onPointerEnd(info, true);
+				},
+				false
+			);
+			if (this.runtime.canvas)
+			{
+				this.runtime.canvas.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+			}
+		}
+		else
+		{
+			elem.addEventListener("touchstart",
+				function(info) {
+					self.onTouchStart(info);
+				},
+				false
+			);
+			elem.addEventListener("touchmove",
+				function(info) {
+					self.onTouchMove(info);
+				},
+				false
+			);
+			elem2.addEventListener("touchend",
+				function(info) {
+					self.onTouchEnd(info, false);
+				},
+				false
+			);
+			elem2.addEventListener("touchcancel",
+				function(info) {
+					self.onTouchEnd(info, true);
+				},
+				false
+			);
+		}
+		if (this.isWindows8)
+		{
+			var win8accelerometerFn = function(e) {
+					var reading = e["reading"];
+					self.acc_x = reading["accelerationX"];
+					self.acc_y = reading["accelerationY"];
+					self.acc_z = reading["accelerationZ"];
+				};
+			var win8inclinometerFn = function(e) {
+					var reading = e["reading"];
+					self.orient_alpha = reading["yawDegrees"];
+					self.orient_beta = reading["pitchDegrees"];
+					self.orient_gamma = reading["rollDegrees"];
+				};
+			var accelerometer = Windows["Devices"]["Sensors"]["Accelerometer"]["getDefault"]();
+            if (accelerometer)
+			{
+                accelerometer["reportInterval"] = Math.max(accelerometer["minimumReportInterval"], 16);
+				accelerometer.addEventListener("readingchanged", win8accelerometerFn);
+            }
+			var inclinometer = Windows["Devices"]["Sensors"]["Inclinometer"]["getDefault"]();
+			if (inclinometer)
+			{
+				inclinometer["reportInterval"] = Math.max(inclinometer["minimumReportInterval"], 16);
+				inclinometer.addEventListener("readingchanged", win8inclinometerFn);
+			}
+			document.addEventListener("visibilitychange", function(e) {
+				if (document["hidden"] || document["msHidden"])
+				{
+					if (accelerometer)
+						accelerometer.removeEventListener("readingchanged", win8accelerometerFn);
+					if (inclinometer)
+						inclinometer.removeEventListener("readingchanged", win8inclinometerFn);
+				}
+				else
+				{
+					if (accelerometer)
+						accelerometer.addEventListener("readingchanged", win8accelerometerFn);
+					if (inclinometer)
+						inclinometer.addEventListener("readingchanged", win8inclinometerFn);
+				}
+			}, false);
+		}
+		else
+		{
+			window.addEventListener("deviceorientation", function (eventData) {
+				self.orient_alpha = eventData["alpha"] || 0;
+				self.orient_beta = eventData["beta"] || 0;
+				self.orient_gamma = eventData["gamma"] || 0;
+			}, false);
+			window.addEventListener("devicemotion", function (eventData) {
+				if (eventData["accelerationIncludingGravity"])
+				{
+					self.acc_g_x = eventData["accelerationIncludingGravity"]["x"] || 0;
+					self.acc_g_y = eventData["accelerationIncludingGravity"]["y"] || 0;
+					self.acc_g_z = eventData["accelerationIncludingGravity"]["z"] || 0;
+				}
+				if (eventData["acceleration"])
+				{
+					self.acc_x = eventData["acceleration"]["x"] || 0;
+					self.acc_y = eventData["acceleration"]["y"] || 0;
+					self.acc_z = eventData["acceleration"]["z"] || 0;
+				}
+			}, false);
+		}
+		if (this.useMouseInput && !this.runtime.isDomFree)
+		{
+			jQuery(document).mousemove(
+				function(info) {
+					self.onMouseMove(info);
+				}
+			);
+			jQuery(document).mousedown(
+				function(info) {
+					self.onMouseDown(info);
+				}
+			);
+			jQuery(document).mouseup(
+				function(info) {
+					self.onMouseUp(info);
+				}
+			);
+		}
+		if (this.runtime.isAppMobi && !this.runtime.isDirectCanvas)
+		{
+			AppMobi["accelerometer"]["watchAcceleration"](AppMobiGetAcceleration, { "frequency": 40, "adjustForRotation": true });
+		}
+		if (this.runtime.isCordova && navigator["accelerometer"] && navigator["accelerometer"]["watchAcceleration"])
+		{
+			navigator["accelerometer"]["watchAcceleration"](PhoneGapGetAcceleration, null, { "frequency": 40 });
+		}
+		this.runtime.tick2Me(this);
+	};
+	instanceProto.onPointerMove = function (info)
+	{
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+		if (info.preventDefault)
+			info.preventDefault();
+		var i = this.findTouch(info["pointerId"]);
+		var nowtime = cr.performance_now();
+		if (i >= 0)
+		{
+			var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+			var t = this.touches[i];
+			if (nowtime - t.time < 2)
+				return;
+			t.update(nowtime, info.pageX - offset.left, info.pageY - offset.top);
+		}
+	};
+	instanceProto.onPointerStart = function (info)
+	{
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var touchx = info.pageX - offset.left;
+		var touchy = info.pageY - offset.top;
+		var nowtime = cr.performance_now();
+		this.trigger_index = this.touches.length;
+		this.trigger_id = info["pointerId"];
+		this.touches.push(AllocTouchInfo(touchx, touchy, info["pointerId"], this.trigger_index));
+		this.runtime.isInUserInputEvent = true;
+		this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnNthTouchStart, this);
+		this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchStart, this);
+		this.curTouchX = touchx;
+		this.curTouchY = touchy;
+		this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchObject, this);
+		this.runtime.isInUserInputEvent = false;
+	};
+	instanceProto.onPointerEnd = function (info, isCancel)
+	{
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		var i = this.findTouch(info["pointerId"]);
+		this.trigger_index = (i >= 0 ? this.touches[i].startindex : -1);
+		this.trigger_id = (i >= 0 ? this.touches[i]["id"] : -1);
+		this.runtime.isInUserInputEvent = true;
+		this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnNthTouchEnd, this);
+		this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);
+		if (i >= 0)
+		{
+			if (!isCancel)
+				this.touches[i].maybeTriggerTap(this, i);
+			ReleaseTouchInfo(this.touches[i]);
+			this.touches.splice(i, 1);
+		}
+		this.runtime.isInUserInputEvent = false;
+	};
+	instanceProto.onTouchMove = function (info)
+	{
+		if (info.preventDefault)
+			info.preventDefault();
+		var nowtime = cr.performance_now();
+		var i, len, t, u;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			var j = this.findTouch(t["identifier"]);
+			if (j >= 0)
+			{
+				var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+				u = this.touches[j];
+				if (nowtime - u.time < 2)
+					continue;
+				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top);
+			}
+		}
+	};
+	instanceProto.onTouchStart = function (info)
+	{
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var nowtime = cr.performance_now();
+		this.runtime.isInUserInputEvent = true;
+		var i, len, t, j;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			j = this.findTouch(t["identifier"]);
+			if (j !== -1)
+				continue;
+			var touchx = t.pageX - offset.left;
+			var touchy = t.pageY - offset.top;
+			this.trigger_index = this.touches.length;
+			this.trigger_id = t["identifier"];
+			this.touches.push(AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index));
+			this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnNthTouchStart, this);
+			this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchStart, this);
+			this.curTouchX = touchx;
+			this.curTouchY = touchy;
+			this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchObject, this);
+		}
+		this.runtime.isInUserInputEvent = false;
+	};
+	instanceProto.onTouchEnd = function (info, isCancel)
+	{
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		this.runtime.isInUserInputEvent = true;
+		var i, len, t, j;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			j = this.findTouch(t["identifier"]);
+			if (j >= 0)
+			{
+				this.trigger_index = this.touches[j].startindex;
+				this.trigger_id = this.touches[j]["id"];
+				this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnNthTouchEnd, this);
+				this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);
+				if (!isCancel)
+					this.touches[j].maybeTriggerTap(this, j);
+				ReleaseTouchInfo(this.touches[j]);
+				this.touches.splice(j, 1);
+			}
+		}
+		this.runtime.isInUserInputEvent = false;
+	};
+	instanceProto.getAlpha = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_alpha === 0 && appmobi_accz !== 0)
+			return appmobi_accz * 90;
+		else if (this.runtime.isCordova  && this.orient_alpha === 0 && pg_accz !== 0)
+			return pg_accz * 90;
+		else
+			return this.orient_alpha;
+	};
+	instanceProto.getBeta = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_beta === 0 && appmobi_accy !== 0)
+			return appmobi_accy * -90;
+		else if (this.runtime.isCordova  && this.orient_beta === 0 && pg_accy !== 0)
+			return pg_accy * 90;
+		else
+			return this.orient_beta;
+	};
+	instanceProto.getGamma = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_gamma === 0 && appmobi_accx !== 0)
+			return appmobi_accx * 90;
+		else if (this.runtime.isCordova  && this.orient_gamma === 0 && pg_accx !== 0)
+			return pg_accx * 90;
+		else
+			return this.orient_gamma;
+	};
+	var noop_func = function(){};
+	instanceProto.onMouseDown = function(info)
+	{
+		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
+			info.preventDefault();
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
+		var fakeinfo = { changedTouches: [t] };
+		this.onTouchStart(fakeinfo);
+		this.mouseDown = true;
+	};
+	instanceProto.onMouseMove = function(info)
+	{
+		if (!this.mouseDown)
+			return;
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
+		var fakeinfo = { changedTouches: [t] };
+		this.onTouchMove(fakeinfo);
+	};
+	instanceProto.onMouseUp = function(info)
+	{
+		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
+			info.preventDefault();
+		this.runtime.had_a_click = true;
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
+		var fakeinfo = { changedTouches: [t] };
+		this.onTouchEnd(fakeinfo);
+		this.mouseDown = false;
+	};
+	instanceProto.tick2 = function()
+	{
+		var i, len, t;
+		var nowtime = cr.performance_now();
+		for (i = 0, len = this.touches.length; i < len; ++i)
+		{
+			t = this.touches[i];
+			if (t.time <= nowtime - 50)
+				t.lasttime = nowtime;
+			t.maybeTriggerHold(this, i);
+		}
+	};
+	function Cnds() {};
+	Cnds.prototype.OnTouchStart = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnTouchEnd = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.IsInTouch = function ()
+	{
+		return this.touches.length;
+	};
+	Cnds.prototype.OnTouchObject = function (type)
+	{
+		if (!type)
+			return false;
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	var touching = [];
+	Cnds.prototype.IsTouchingObject = function (type)
+	{
+		if (!type)
+			return false;
+		var sol = type.getCurrentSol();
+		var instances = sol.getObjects();
+		var px, py;
+		var i, leni, j, lenj;
+		for (i = 0, leni = instances.length; i < leni; i++)
+		{
+			var inst = instances[i];
+			inst.update_bbox();
+			for (j = 0, lenj = this.touches.length; j < lenj; j++)
+			{
+				var touch = this.touches[j];
+				px = inst.layer.canvasToLayer(touch.x, touch.y, true);
+				py = inst.layer.canvasToLayer(touch.x, touch.y, false);
+				if (inst.contains_pt(px, py))
+				{
+					touching.push(inst);
+					break;
+				}
+			}
+		}
+		if (touching.length)
+		{
+			sol.select_all = false;
+			cr.shallowAssignArray(sol.instances, touching);
+			type.applySolToContainer();
+			touching.length = 0;
+			return true;
+		}
+		else
+			return false;
+	};
+	Cnds.prototype.CompareTouchSpeed = function (index, cmp, s)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+			return false;
+		var t = this.touches[index];
+		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
+		var timediff = (t.time - t.lasttime) / 1000;
+		var speed = 0;
+		if (timediff > 0)
+			speed = dist / timediff;
+		return cr.do_cmp(speed, cmp, s);
+	};
+	Cnds.prototype.OrientationSupported = function ()
+	{
+		return typeof window["DeviceOrientationEvent"] !== "undefined";
+	};
+	Cnds.prototype.MotionSupported = function ()
+	{
+		return typeof window["DeviceMotionEvent"] !== "undefined";
+	};
+	Cnds.prototype.CompareOrientation = function (orientation_, cmp_, angle_)
+	{
+		var v = 0;
+		if (orientation_ === 0)
+			v = this.getAlpha();
+		else if (orientation_ === 1)
+			v = this.getBeta();
+		else
+			v = this.getGamma();
+		return cr.do_cmp(v, cmp_, angle_);
+	};
+	Cnds.prototype.CompareAcceleration = function (acceleration_, cmp_, angle_)
+	{
+		var v = 0;
+		if (acceleration_ === 0)
+			v = this.acc_g_x;
+		else if (acceleration_ === 1)
+			v = this.acc_g_y;
+		else if (acceleration_ === 2)
+			v = this.acc_g_z;
+		else if (acceleration_ === 3)
+			v = this.acc_x;
+		else if (acceleration_ === 4)
+			v = this.acc_y;
+		else if (acceleration_ === 5)
+			v = this.acc_z;
+		return cr.do_cmp(v, cmp_, angle_);
+	};
+	Cnds.prototype.OnNthTouchStart = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return touch_ === this.trigger_index;
+	};
+	Cnds.prototype.OnNthTouchEnd = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return touch_ === this.trigger_index;
+	};
+	Cnds.prototype.HasNthTouch = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return this.touches.length >= touch_ + 1;
+	};
+	Cnds.prototype.OnHoldGesture = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnTapGesture = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnDoubleTapGesture = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnHoldGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	Cnds.prototype.OnTapGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	Cnds.prototype.OnDoubleTapGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	pluginProto.cnds = new Cnds();
+	function Exps() {};
+	Exps.prototype.TouchCount = function (ret)
+	{
+		ret.set_int(this.touches.length);
+	};
+	Exps.prototype.X = function (ret, layerparam)
+	{
+		var index = this.getTouchIndex;
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.XAt = function (ret, index, layerparam)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.XForID = function (ret, id, layerparam)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(touch.x, touch.y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(touch.x, touch.y, true));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.Y = function (ret, layerparam)
+	{
+		var index = this.getTouchIndex;
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.YAt = function (ret, index, layerparam)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.YForID = function (ret, id, layerparam)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+		if (cr.is_undefined(layerparam))
+		{
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(touch.x, touch.y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+			if (layer)
+				ret.set_float(layer.canvasToLayer(touch.x, touch.y, false));
+			else
+				ret.set_float(0);
+		}
+	};
+	Exps.prototype.AbsoluteX = function (ret)
+	{
+		if (this.touches.length)
+			ret.set_float(this.touches[0].x);
+		else
+			ret.set_float(0);
+	};
+	Exps.prototype.AbsoluteXAt = function (ret, index)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		ret.set_float(this.touches[index].x);
+	};
+	Exps.prototype.AbsoluteXForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		ret.set_float(touch.x);
+	};
+	Exps.prototype.AbsoluteY = function (ret)
+	{
+		if (this.touches.length)
+			ret.set_float(this.touches[0].y);
+		else
+			ret.set_float(0);
+	};
+	Exps.prototype.AbsoluteYAt = function (ret, index)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		ret.set_float(this.touches[index].y);
+	};
+	Exps.prototype.AbsoluteYForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		ret.set_float(touch.y);
+	};
+	Exps.prototype.SpeedAt = function (ret, index)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var t = this.touches[index];
+		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
+		var timediff = (t.time - t.lasttime) / 1000;
+		if (timediff === 0)
+			ret.set_float(0);
+		else
+			ret.set_float(dist / timediff);
+	};
+	Exps.prototype.SpeedForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		var dist = cr.distanceTo(touch.x, touch.y, touch.lastx, touch.lasty);
+		var timediff = (touch.time - touch.lasttime) / 1000;
+		if (timediff === 0)
+			ret.set_float(0);
+		else
+			ret.set_float(dist / timediff);
+	};
+	Exps.prototype.AngleAt = function (ret, index)
+	{
+		index = Math.floor(index);
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var t = this.touches[index];
+		ret.set_float(cr.to_degrees(cr.angleTo(t.lastx, t.lasty, t.x, t.y)));
+	};
+	Exps.prototype.AngleForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		var touch = this.touches[index];
+		ret.set_float(cr.to_degrees(cr.angleTo(touch.lastx, touch.lasty, touch.x, touch.y)));
+	};
+	Exps.prototype.Alpha = function (ret)
+	{
+		ret.set_float(this.getAlpha());
+	};
+	Exps.prototype.Beta = function (ret)
+	{
+		ret.set_float(this.getBeta());
+	};
+	Exps.prototype.Gamma = function (ret)
+	{
+		ret.set_float(this.getGamma());
+	};
+	Exps.prototype.AccelerationXWithG = function (ret)
+	{
+		ret.set_float(this.acc_g_x);
+	};
+	Exps.prototype.AccelerationYWithG = function (ret)
+	{
+		ret.set_float(this.acc_g_y);
+	};
+	Exps.prototype.AccelerationZWithG = function (ret)
+	{
+		ret.set_float(this.acc_g_z);
+	};
+	Exps.prototype.AccelerationX = function (ret)
+	{
+		ret.set_float(this.acc_x);
+	};
+	Exps.prototype.AccelerationY = function (ret)
+	{
+		ret.set_float(this.acc_y);
+	};
+	Exps.prototype.AccelerationZ = function (ret)
+	{
+		ret.set_float(this.acc_z);
+	};
+	Exps.prototype.TouchIndex = function (ret)
+	{
+		ret.set_int(this.trigger_index);
+	};
+	Exps.prototype.TouchID = function (ret)
+	{
+		ret.set_float(this.trigger_id);
+	};
+	pluginProto.exps = new Exps();
+}());
+;
+;
+cr.behaviors.Anchor = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var behaviorProto = cr.behaviors.Anchor.prototype;
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	var behtypeProto = behaviorProto.Type.prototype;
+	behtypeProto.onCreate = function()
+	{
+	};
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	var behinstProto = behaviorProto.Instance.prototype;
+	behinstProto.onCreate = function()
+	{
+		this.anch_left = this.properties[0];		// 0 = left, 1 = right, 2 = none
+		this.anch_top = this.properties[1];			// 0 = top, 1 = bottom, 2 = none
+		this.anch_right = this.properties[2];		// 0 = none, 1 = right
+		this.anch_bottom = this.properties[3];		// 0 = none, 1 = bottom
+		this.inst.update_bbox();
+		this.xleft = this.inst.bbox.left;
+		this.ytop = this.inst.bbox.top;
+		this.xright = this.runtime.original_width - this.inst.bbox.left;
+		this.ybottom = this.runtime.original_height - this.inst.bbox.top;
+		this.rdiff = this.runtime.original_width - this.inst.bbox.right;
+		this.bdiff = this.runtime.original_height - this.inst.bbox.bottom;
+		this.enabled = (this.properties[4] !== 0);
+	};
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"xleft": this.xleft,
+			"ytop": this.ytop,
+			"xright": this.xright,
+			"ybottom": this.ybottom,
+			"rdiff": this.rdiff,
+			"bdiff": this.bdiff,
+			"enabled": this.enabled
+		};
+	};
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.xleft = o["xleft"];
+		this.ytop = o["ytop"];
+		this.xright = o["xright"];
+		this.ybottom = o["ybottom"];
+		this.rdiff = o["rdiff"];
+		this.bdiff = o["bdiff"];
+		this.enabled = o["enabled"];
+	};
+	behinstProto.tick = function ()
+	{
+		if (!this.enabled)
+			return;
+		var n;
+		var layer = this.inst.layer;
+		var inst = this.inst;
+		var bbox = this.inst.bbox;
+		if (this.anch_left === 0)
+		{
+			inst.update_bbox();
+			n = (layer.viewLeft + this.xleft) - bbox.left;
+			if (n !== 0)
+			{
+				inst.x += n;
+				inst.set_bbox_changed();
+			}
+		}
+		else if (this.anch_left === 1)
+		{
+			inst.update_bbox();
+			n = (layer.viewRight - this.xright) - bbox.left;
+			if (n !== 0)
+			{
+				inst.x += n;
+				inst.set_bbox_changed();
+			}
+		}
+		if (this.anch_top === 0)
+		{
+			inst.update_bbox();
+			n = (layer.viewTop + this.ytop) - bbox.top;
+			if (n !== 0)
+			{
+				inst.y += n;
+				inst.set_bbox_changed();
+			}
+		}
+		else if (this.anch_top === 1)
+		{
+			inst.update_bbox();
+			n = (layer.viewBottom - this.ybottom) - bbox.top;
+			if (n !== 0)
+			{
+				inst.y += n;
+				inst.set_bbox_changed();
+			}
+		}
+		if (this.anch_right === 1)
+		{
+			inst.update_bbox();
+			n = (layer.viewRight - this.rdiff) - bbox.right;
+			if (n !== 0)
+			{
+				inst.width += n;
+				if (inst.width < 0)
+					inst.width = 0;
+				inst.set_bbox_changed();
+			}
+		}
+		if (this.anch_bottom === 1)
+		{
+			inst.update_bbox();
+			n = (layer.viewBottom - this.bdiff) - bbox.bottom;
+			if (n !== 0)
+			{
+				inst.height += n;
+				if (inst.height < 0)
+					inst.height = 0;
+				inst.set_bbox_changed();
+			}
+		}
+	};
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
+	function Acts() {};
+	Acts.prototype.SetEnabled = function (e)
+	{
+		if (this.enabled && e === 0)
+			this.enabled = false;
+		else if (!this.enabled && e !== 0)
+		{
+			this.inst.update_bbox();
+			this.xleft = this.inst.bbox.left;
+			this.ytop = this.inst.bbox.top;
+			this.xright = this.runtime.original_width - this.inst.bbox.left;
+			this.ybottom = this.runtime.original_height - this.inst.bbox.top;
+			this.rdiff = this.runtime.original_width - this.inst.bbox.right;
+			this.bdiff = this.runtime.original_height - this.inst.bbox.bottom;
+			this.enabled = true;
+		}
+	};
+	behaviorProto.acts = new Acts();
+	function Exps() {};
+	behaviorProto.exps = new Exps();
+}());
+;
+;
 cr.behaviors.Bullet = function(runtime)
 {
 	this.runtime = runtime;
@@ -19779,13 +21287,13 @@ cr.behaviors.Bullet = function(runtime)
 }());
 ;
 ;
-cr.behaviors.EightDir = function(runtime)
+cr.behaviors.Flash = function(runtime)
 {
 	this.runtime = runtime;
 };
 (function ()
 {
-	var behaviorProto = cr.behaviors.EightDir.prototype;
+	var behaviorProto = cr.behaviors.Flash.prototype;
 	behaviorProto.Type = function(behavior, objtype)
 	{
 		this.behavior = behavior;
@@ -19802,1054 +21310,175 @@ cr.behaviors.EightDir = function(runtime)
 		this.behavior = type.behavior;
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
-		this.upkey = false;
-		this.downkey = false;
-		this.leftkey = false;
-		this.rightkey = false;
-		this.ignoreInput = false;
-		this.simup = false;
-		this.simdown = false;
-		this.simleft = false;
-		this.simright = false;
-		this.lastuptick = -1;
-		this.lastdowntick = -1;
-		this.lastlefttick = -1;
-		this.lastrighttick = -1;
-		this.dx = 0;
-		this.dy = 0;
 	};
 	var behinstProto = behaviorProto.Instance.prototype;
 	behinstProto.onCreate = function()
 	{
-		this.maxspeed = this.properties[0];
-		this.acc = this.properties[1];
-		this.dec = this.properties[2];
-		this.directions = this.properties[3];	// 0=Up & down, 1=Left & right, 2=4 directions, 3=8 directions"
-		this.angleMode = this.properties[4];	// 0=No,1=90-degree intervals, 2=45-degree intervals, 3=360 degree (smooth)
-		this.defaultControls = (this.properties[5] === 1);	// 0=no, 1=yes
-		this.enabled = (this.properties[6] !== 0);
-		if (this.defaultControls && !this.runtime.isDomFree)
-		{
-			jQuery(document).keydown(
-				(function (self) {
-					return function(info) {
-						self.onKeyDown(info);
-					};
-				})(this)
-			);
-			jQuery(document).keyup(
-				(function (self) {
-					return function(info) {
-						self.onKeyUp(info);
-					};
-				})(this)
-			);
-		}
+		this.ontime = 0;
+		this.offtime = 0;
+		this.stage = 0;			// 0 = on, 1 = off
+		this.stagetimeleft = 0;
+		this.timeleft = 0;
 	};
 	behinstProto.saveToJSON = function ()
 	{
 		return {
-			"dx": this.dx,
-			"dy": this.dy,
-			"enabled": this.enabled,
-			"maxspeed": this.maxspeed,
-			"acc": this.acc,
-			"dec": this.dec,
-			"ignoreInput": this.ignoreInput
+			"ontime": this.ontime,
+			"offtime": this.offtime,
+			"stage": this.stage,
+			"stagetimeleft": this.stagetimeleft,
+			"timeleft": this.timeleft
 		};
 	};
 	behinstProto.loadFromJSON = function (o)
 	{
-		this.dx = o["dx"];
-		this.dy = o["dy"];
-		this.enabled = o["enabled"];
-		this.maxspeed = o["maxspeed"];
+		this.ontime = o["ontime"];
+		this.offtime = o["offtime"];
+		this.stage = o["stage"];
+		this.stagetimeleft = o["stagetimeleft"];
+		this.timeleft = o["timeleft"];
+	};
+	behinstProto.tick = function ()
+	{
+		if (this.timeleft <= 0)
+			return;		// not flashing
+		var dt = this.runtime.getDt(this.inst);
+		this.timeleft -= dt;
+		if (this.timeleft <= 0)
+		{
+			this.timeleft = 0;
+			this.inst.visible = true;
+			this.runtime.redraw = true;
+			this.runtime.trigger(cr.behaviors.Flash.prototype.cnds.OnFlashEnded, this.inst);
+			return;
+		}
+		this.stagetimeleft -= dt;
+		if (this.stagetimeleft <= 0)
+		{
+			if (this.stage === 0)
+			{
+				this.inst.visible = false;
+				this.stage = 1;
+				this.stagetimeleft += this.offtime;
+			}
+			else
+			{
+				this.inst.visible = true;
+				this.stage = 0;
+				this.stagetimeleft += this.ontime;
+			}
+			this.runtime.redraw = true;
+		}
+	};
+	function Cnds() {};
+	Cnds.prototype.IsFlashing = function ()
+	{
+		return this.timeleft > 0;
+	};
+	Cnds.prototype.OnFlashEnded = function ()
+	{
+		return true;
+	};
+	behaviorProto.cnds = new Cnds();
+	function Acts() {};
+	Acts.prototype.Flash = function (on_, off_, dur_)
+	{
+		this.ontime = on_;
+		this.offtime = off_;
+		this.stage = 1;		// always start off
+		this.stagetimeleft = off_;
+		this.timeleft = dur_;
+		this.inst.visible = false;
+		this.runtime.redraw = true;
+	};
+	Acts.prototype.StopFlashing = function ()
+	{
+		this.timeleft = 0;
+		this.inst.visible = true;
+		this.runtime.redraw = true;
+		return;
+	};
+	behaviorProto.acts = new Acts();
+	function Exps() {};
+	behaviorProto.exps = new Exps();
+}());
+;
+;
+cr.behaviors.Rotate = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var behaviorProto = cr.behaviors.Rotate.prototype;
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	var behtypeProto = behaviorProto.Type.prototype;
+	behtypeProto.onCreate = function()
+	{
+	};
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	var behinstProto = behaviorProto.Instance.prototype;
+	behinstProto.onCreate = function()
+	{
+		this.speed = cr.to_radians(this.properties[0]);
+		this.acc = cr.to_radians(this.properties[1]);
+	};
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"speed": this.speed,
+			"acc": this.acc
+		};
+	};
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.speed = o["speed"];
 		this.acc = o["acc"];
-		this.dec = o["dec"];
-		this.ignoreInput = o["ignoreInput"];
-		this.upkey = false;
-		this.downkey = false;
-		this.leftkey = false;
-		this.rightkey = false;
-		this.simup = false;
-		this.simdown = false;
-		this.simleft = false;
-		this.simright = false;
-		this.lastuptick = -1;
-		this.lastdowntick = -1;
-		this.lastlefttick = -1;
-		this.lastrighttick = -1;
-	};
-	behinstProto.onKeyDown = function (info)
-	{
-		var tickcount = this.runtime.tickcount;
-		switch (info.which) {
-		case 37:	// left
-			info.preventDefault();
-			if (this.lastlefttick < tickcount)
-				this.leftkey = true;
-			break;
-		case 38:	// up
-			info.preventDefault();
-			if (this.lastuptick < tickcount)
-				this.upkey = true;
-			break;
-		case 39:	// right
-			info.preventDefault();
-			if (this.lastrighttick < tickcount)
-				this.rightkey = true;
-			break;
-		case 40:	// down
-			info.preventDefault();
-			if (this.lastdowntick < tickcount)
-				this.downkey = true;
-			break;
-		}
-	};
-	behinstProto.onKeyUp = function (info)
-	{
-		var tickcount = this.runtime.tickcount;
-		switch (info.which) {
-		case 37:	// left
-			info.preventDefault();
-			this.leftkey = false;
-			this.lastlefttick = tickcount;
-			break;
-		case 38:	// up
-			info.preventDefault();
-			this.upkey = false;
-			this.lastuptick = tickcount;
-			break;
-		case 39:	// right
-			info.preventDefault();
-			this.rightkey = false;
-			this.lastrighttick = tickcount;
-			break;
-		case 40:	// down
-			info.preventDefault();
-			this.downkey = false;
-			this.lastdowntick = tickcount;
-			break;
-		}
 	};
 	behinstProto.tick = function ()
 	{
 		var dt = this.runtime.getDt(this.inst);
-		var left = this.leftkey || this.simleft;
-		var right = this.rightkey || this.simright;
-		var up = this.upkey || this.simup;
-		var down = this.downkey || this.simdown;
-		this.simleft = false;
-		this.simright = false;
-		this.simup = false;
-		this.simdown = false;
-		if (!this.enabled)
+		if (dt === 0)
 			return;
-		var collobj = this.runtime.testOverlapSolid(this.inst);
-		if (collobj)
+		if (this.acc !== 0)
+			this.speed += this.acc * dt;
+		if (this.speed !== 0)
 		{
-			this.runtime.registerCollision(this.inst, collobj);
-			if (!this.runtime.pushOutSolidNearest(this.inst))
-				return;		// must be stuck in solid
-		}
-		if (this.ignoreInput)
-		{
-			left = false;
-			right = false;
-			up = false;
-			down = false;
-		}
-		if (this.directions === 0)
-		{
-			left = false;
-			right = false;
-		}
-		else if (this.directions === 1)
-		{
-			up = false;
-			down = false;
-		}
-		if (this.directions === 2 && (up || down))
-		{
-			left = false;
-			right = false;
-		}
-		if (left == right)	// both up or both down
-		{
-			if (this.dx < 0)
-			{
-				this.dx += this.dec * dt;
-				if (this.dx > 0)
-					this.dx = 0;
-			}
-			else if (this.dx > 0)
-			{
-				this.dx -= this.dec * dt;
-				if (this.dx < 0)
-					this.dx = 0;
-			}
-		}
-		if (up == down)
-		{
-			if (this.dy < 0)
-			{
-				this.dy += this.dec * dt;
-				if (this.dy > 0)
-					this.dy = 0;
-			}
-			else if (this.dy > 0)
-			{
-				this.dy -= this.dec * dt;
-				if (this.dy < 0)
-					this.dy = 0;
-			}
-		}
-		if (left && !right)
-		{
-			if (this.dx > 0)
-				this.dx -= (this.acc + this.dec) * dt;
-			else
-				this.dx -= this.acc * dt;
-		}
-		if (right && !left)
-		{
-			if (this.dx < 0)
-				this.dx += (this.acc + this.dec) * dt;
-			else
-				this.dx += this.acc * dt;
-		}
-		if (up && !down)
-		{
-			if (this.dy > 0)
-				this.dy -= (this.acc + this.dec) * dt;
-			else
-				this.dy -= this.acc * dt;
-		}
-		if (down && !up)
-		{
-			if (this.dy < 0)
-				this.dy += (this.acc + this.dec) * dt;
-			else
-				this.dy += this.acc * dt;
-		}
-		var ax, ay;
-		if (this.dx !== 0 || this.dy !== 0)
-		{
-			var speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
-			if (speed > this.maxspeed)
-			{
-				var a = Math.atan2(this.dy, this.dx);
-				this.dx = this.maxspeed * Math.cos(a);
-				this.dy = this.maxspeed * Math.sin(a);
-			}
-			var oldx = this.inst.x;
-			var oldy = this.inst.y;
-			var oldangle = this.inst.angle;
-			this.inst.x += this.dx * dt;
+			this.inst.angle = cr.clamp_angle(this.inst.angle + this.speed * dt);
 			this.inst.set_bbox_changed();
-			collobj = this.runtime.testOverlapSolid(this.inst);
-			if (collobj)
-			{
-				this.inst.x = oldx;
-				this.dx = 0;
-				this.inst.set_bbox_changed();
-				this.runtime.registerCollision(this.inst, collobj);
-			}
-			this.inst.y += this.dy * dt;
-			this.inst.set_bbox_changed();
-			collobj = this.runtime.testOverlapSolid(this.inst);
-			if (collobj)
-			{
-				this.inst.y = oldy;
-				this.dy = 0;
-				this.inst.set_bbox_changed();
-				this.runtime.registerCollision(this.inst, collobj);
-			}
-			ax = cr.round6dp(this.dx);
-			ay = cr.round6dp(this.dy);
-			if (ax !== 0 || ay !== 0)
-			{
-				if (this.angleMode === 1)	// 90 degree intervals
-					this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(ay, ax)) / 90.0) * 90.0);
-				else if (this.angleMode === 2)	// 45 degree intervals
-					this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(ay, ax)) / 45.0) * 45.0);
-				else if (this.angleMode === 3)	// 360 degree
-					this.inst.angle = Math.atan2(ay, ax);
-			}
-			this.inst.set_bbox_changed();
-			if (this.inst.angle != oldangle)
-			{
-				collobj = this.runtime.testOverlapSolid(this.inst);
-				if (collobj)
-				{
-					this.inst.angle = oldangle;
-					this.inst.set_bbox_changed();
-					this.runtime.registerCollision(this.inst, collobj);
-				}
-			}
 		}
 	};
 	function Cnds() {};
-	Cnds.prototype.IsMoving = function ()
-	{
-		return this.dx !== 0 || this.dy !== 0;
-	};
-	Cnds.prototype.CompareSpeed = function (cmp, s)
-	{
-		var speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
-		return cr.do_cmp(speed, cmp, s);
-	};
 	behaviorProto.cnds = new Cnds();
 	function Acts() {};
-	Acts.prototype.Stop = function ()
+	Acts.prototype.SetSpeed = function (s)
 	{
-		this.dx = 0;
-		this.dy = 0;
+		this.speed = cr.to_radians(s);
 	};
-	Acts.prototype.Reverse = function ()
+	Acts.prototype.SetAcceleration = function (a)
 	{
-		this.dx *= -1;
-		this.dy *= -1;
-	};
-	Acts.prototype.SetIgnoreInput = function (ignoring)
-	{
-		this.ignoreInput = ignoring;
-	};
-	Acts.prototype.SetSpeed = function (speed)
-	{
-		if (speed < 0)
-			speed = 0;
-		if (speed > this.maxspeed)
-			speed = this.maxspeed;
-		var a = Math.atan2(this.dy, this.dx);
-		this.dx = speed * Math.cos(a);
-		this.dy = speed * Math.sin(a);
-	};
-	Acts.prototype.SetMaxSpeed = function (maxspeed)
-	{
-		this.maxspeed = maxspeed;
-		if (this.maxspeed < 0)
-			this.maxspeed = 0;
-	};
-	Acts.prototype.SetAcceleration = function (acc)
-	{
-		this.acc = acc;
-		if (this.acc < 0)
-			this.acc = 0;
-	};
-	Acts.prototype.SetDeceleration = function (dec)
-	{
-		this.dec = dec;
-		if (this.dec < 0)
-			this.dec = 0;
-	};
-	Acts.prototype.SimulateControl = function (ctrl)
-	{
-		switch (ctrl) {
-		case 0:		this.simleft = true;	break;
-		case 1:		this.simright = true;	break;
-		case 2:		this.simup = true;		break;
-		case 3:		this.simdown = true;	break;
-		}
-	};
-	Acts.prototype.SetEnabled = function (en)
-	{
-		this.enabled = (en === 1);
-	};
-	Acts.prototype.SetVectorX = function (x_)
-	{
-		this.dx = x_;
-	};
-	Acts.prototype.SetVectorY = function (y_)
-	{
-		this.dy = y_;
+		this.acc = cr.to_radians(a);
 	};
 	behaviorProto.acts = new Acts();
 	function Exps() {};
 	Exps.prototype.Speed = function (ret)
 	{
-		ret.set_float(Math.sqrt(this.dx * this.dx + this.dy * this.dy));
-	};
-	Exps.prototype.MaxSpeed = function (ret)
-	{
-		ret.set_float(this.maxspeed);
+		ret.set_float(cr.to_degrees(this.speed));
 	};
 	Exps.prototype.Acceleration = function (ret)
 	{
-		ret.set_float(this.acc);
-	};
-	Exps.prototype.Deceleration = function (ret)
-	{
-		ret.set_float(this.dec);
-	};
-	Exps.prototype.MovingAngle = function (ret)
-	{
-		ret.set_float(cr.to_degrees(Math.atan2(this.dy, this.dx)));
-	};
-	Exps.prototype.VectorX = function (ret)
-	{
-		ret.set_float(this.dx);
-	};
-	Exps.prototype.VectorY = function (ret)
-	{
-		ret.set_float(this.dy);
-	};
-	behaviorProto.exps = new Exps();
-}());
-;
-;
-cr.behaviors.Fade = function(runtime)
-{
-	this.runtime = runtime;
-};
-(function ()
-{
-	var behaviorProto = cr.behaviors.Fade.prototype;
-	behaviorProto.Type = function(behavior, objtype)
-	{
-		this.behavior = behavior;
-		this.objtype = objtype;
-		this.runtime = behavior.runtime;
-	};
-	var behtypeProto = behaviorProto.Type.prototype;
-	behtypeProto.onCreate = function()
-	{
-	};
-	behaviorProto.Instance = function(type, inst)
-	{
-		this.type = type;
-		this.behavior = type.behavior;
-		this.inst = inst;				// associated object instance to modify
-		this.runtime = type.runtime;
-	};
-	var behinstProto = behaviorProto.Instance.prototype;
-	behinstProto.onCreate = function()
-	{
-		var active_at_start = this.properties[0] === 1;
-		this.fadeInTime = this.properties[1];
-		this.waitTime = this.properties[2];
-		this.fadeOutTime = this.properties[3];
-		this.destroy = this.properties[4];			// 0 = no, 1 = after fade out
-		this.stage = active_at_start ? 0 : 3;		// 0 = fade in, 1 = wait, 2 = fade out, 3 = done
-		if (this.recycled)
-			this.stageTime.reset();
-		else
-			this.stageTime = new cr.KahanAdder();
-		this.maxOpacity = (this.inst.opacity ? this.inst.opacity : 1.0);
-		if (active_at_start)
-		{
-			if (this.fadeInTime === 0)
-			{
-				this.stage = 1;
-				if (this.waitTime === 0)
-					this.stage = 2;
-			}
-			else
-			{
-				this.inst.opacity = 0;
-				this.runtime.redraw = true;
-			}
-		}
-	};
-	behinstProto.saveToJSON = function ()
-	{
-		return {
-			"fit": this.fadeInTime,
-			"wt": this.waitTime,
-			"fot": this.fadeOutTime,
-			"s": this.stage,
-			"st": this.stageTime.sum,
-			"mo": this.maxOpacity,
-		};
-	};
-	behinstProto.loadFromJSON = function (o)
-	{
-		this.fadeInTime = o["fit"];
-		this.waitTime = o["wt"];
-		this.fadeOutTime = o["fot"];
-		this.stage = o["s"];
-		this.stageTime.reset();
-		this.stageTime.sum = o["st"];
-		this.maxOpacity = o["mo"];
-	};
-	behinstProto.tick = function ()
-	{
-		this.stageTime.add(this.runtime.getDt(this.inst));
-		if (this.stage === 0)
-		{
-			this.inst.opacity = (this.stageTime.sum / this.fadeInTime) * this.maxOpacity;
-			this.runtime.redraw = true;
-			if (this.inst.opacity >= this.maxOpacity)
-			{
-				this.inst.opacity = this.maxOpacity;
-				this.stage = 1;	// wait stage
-				this.stageTime.reset();
-				this.runtime.trigger(cr.behaviors.Fade.prototype.cnds.OnFadeInEnd, this.inst);
-			}
-		}
-		if (this.stage === 1)
-		{
-			if (this.stageTime.sum >= this.waitTime)
-			{
-				this.stage = 2;	// fade out stage
-				this.stageTime.reset();
-				this.runtime.trigger(cr.behaviors.Fade.prototype.cnds.OnWaitEnd, this.inst);
-			}
-		}
-		if (this.stage === 2)
-		{
-			if (this.fadeOutTime !== 0)
-			{
-				this.inst.opacity = this.maxOpacity - ((this.stageTime.sum / this.fadeOutTime) * this.maxOpacity);
-				this.runtime.redraw = true;
-				if (this.inst.opacity < 0)
-				{
-					this.inst.opacity = 0;
-					this.stage = 3;	// done
-					this.stageTime.reset();
-					this.runtime.trigger(cr.behaviors.Fade.prototype.cnds.OnFadeOutEnd, this.inst);
-					if (this.destroy === 1)
-						this.runtime.DestroyInstance(this.inst);
-				}
-			}
-		}
-	};
-	behinstProto.doStart = function ()
-	{
-		this.stage = 0;
-		this.stageTime.reset();
-		if (this.fadeInTime === 0)
-		{
-			this.stage = 1;
-			if (this.waitTime === 0)
-				this.stage = 2;
-		}
-		else
-		{
-			this.inst.opacity = 0;
-			this.runtime.redraw = true;
-		}
-	};
-	function Cnds() {};
-	Cnds.prototype.OnFadeOutEnd = function ()
-	{
-		return true;
-	};
-	Cnds.prototype.OnFadeInEnd = function ()
-	{
-		return true;
-	};
-	Cnds.prototype.OnWaitEnd = function ()
-	{
-		return true;
-	};
-	behaviorProto.cnds = new Cnds();
-	function Acts() {};
-	Acts.prototype.StartFade = function ()
-	{
-		if (this.stage === 3)
-			this.doStart();
-	};
-	Acts.prototype.RestartFade = function ()
-	{
-		this.doStart();
-	};
-	Acts.prototype.SetFadeInTime = function (t)
-	{
-		if (t < 0)
-			t = 0;
-		this.fadeInTime = t;
-	};
-	Acts.prototype.SetWaitTime = function (t)
-	{
-		if (t < 0)
-			t = 0;
-		this.waitTime = t;
-	};
-	Acts.prototype.SetFadeOutTime = function (t)
-	{
-		if (t < 0)
-			t = 0;
-		this.fadeOutTime = t;
-	};
-	behaviorProto.acts = new Acts();
-	function Exps() {};
-	Exps.prototype.FadeInTime = function (ret)
-	{
-		ret.set_float(this.fadeInTime);
-	};
-	Exps.prototype.WaitTime = function (ret)
-	{
-		ret.set_float(this.waitTime);
-	};
-	Exps.prototype.FadeOutTime = function (ret)
-	{
-		ret.set_float(this.fadeOutTime);
-	};
-	behaviorProto.exps = new Exps();
-}());
-;
-;
-cr.behaviors.Pin = function(runtime)
-{
-	this.runtime = runtime;
-};
-(function ()
-{
-	var behaviorProto = cr.behaviors.Pin.prototype;
-	behaviorProto.Type = function(behavior, objtype)
-	{
-		this.behavior = behavior;
-		this.objtype = objtype;
-		this.runtime = behavior.runtime;
-	};
-	var behtypeProto = behaviorProto.Type.prototype;
-	behtypeProto.onCreate = function()
-	{
-	};
-	behaviorProto.Instance = function(type, inst)
-	{
-		this.type = type;
-		this.behavior = type.behavior;
-		this.inst = inst;				// associated object instance to modify
-		this.runtime = type.runtime;
-	};
-	var behinstProto = behaviorProto.Instance.prototype;
-	behinstProto.onCreate = function()
-	{
-		this.pinObject = null;
-		this.pinObjectUid = -1;		// for loading
-		this.pinAngle = 0;
-		this.pinDist = 0;
-		this.myStartAngle = 0;
-		this.theirStartAngle = 0;
-		this.lastKnownAngle = 0;
-		this.mode = 0;				// 0 = position & angle; 1 = position; 2 = angle; 3 = rope; 4 = bar
-		var self = this;
-		if (!this.recycled)
-		{
-			this.myDestroyCallback = (function(inst) {
-													self.onInstanceDestroyed(inst);
-												});
-		}
-		this.runtime.addDestroyCallback(this.myDestroyCallback);
-	};
-	behinstProto.saveToJSON = function ()
-	{
-		return {
-			"uid": this.pinObject ? this.pinObject.uid : -1,
-			"pa": this.pinAngle,
-			"pd": this.pinDist,
-			"msa": this.myStartAngle,
-			"tsa": this.theirStartAngle,
-			"lka": this.lastKnownAngle,
-			"m": this.mode
-		};
-	};
-	behinstProto.loadFromJSON = function (o)
-	{
-		this.pinObjectUid = o["uid"];		// wait until afterLoad to look up
-		this.pinAngle = o["pa"];
-		this.pinDist = o["pd"];
-		this.myStartAngle = o["msa"];
-		this.theirStartAngle = o["tsa"];
-		this.lastKnownAngle = o["lka"];
-		this.mode = o["m"];
-	};
-	behinstProto.afterLoad = function ()
-	{
-		if (this.pinObjectUid === -1)
-			this.pinObject = null;
-		else
-		{
-			this.pinObject = this.runtime.getObjectByUID(this.pinObjectUid);
-;
-		}
-		this.pinObjectUid = -1;
-	};
-	behinstProto.onInstanceDestroyed = function (inst)
-	{
-		if (this.pinObject == inst)
-			this.pinObject = null;
-	};
-	behinstProto.onDestroy = function()
-	{
-		this.pinObject = null;
-		this.runtime.removeDestroyCallback(this.myDestroyCallback);
-	};
-	behinstProto.tick = function ()
-	{
-	};
-	behinstProto.tick2 = function ()
-	{
-		if (!this.pinObject)
-			return;
-		if (this.lastKnownAngle !== this.inst.angle)
-			this.myStartAngle = cr.clamp_angle(this.myStartAngle + (this.inst.angle - this.lastKnownAngle));
-		var newx = this.inst.x;
-		var newy = this.inst.y;
-		if (this.mode === 3 || this.mode === 4)		// rope mode or bar mode
-		{
-			var dist = cr.distanceTo(this.inst.x, this.inst.y, this.pinObject.x, this.pinObject.y);
-			if ((dist > this.pinDist) || (this.mode === 4 && dist < this.pinDist))
-			{
-				var a = cr.angleTo(this.pinObject.x, this.pinObject.y, this.inst.x, this.inst.y);
-				newx = this.pinObject.x + Math.cos(a) * this.pinDist;
-				newy = this.pinObject.y + Math.sin(a) * this.pinDist;
-			}
-		}
-		else
-		{
-			newx = this.pinObject.x + Math.cos(this.pinObject.angle + this.pinAngle) * this.pinDist;
-			newy = this.pinObject.y + Math.sin(this.pinObject.angle + this.pinAngle) * this.pinDist;
-		}
-		var newangle = cr.clamp_angle(this.myStartAngle + (this.pinObject.angle - this.theirStartAngle));
-		this.lastKnownAngle = newangle;
-		if ((this.mode === 0 || this.mode === 1 || this.mode === 3 || this.mode === 4)
-			&& (this.inst.x !== newx || this.inst.y !== newy))
-		{
-			this.inst.x = newx;
-			this.inst.y = newy;
-			this.inst.set_bbox_changed();
-		}
-		if ((this.mode === 0 || this.mode === 2) && (this.inst.angle !== newangle))
-		{
-			this.inst.angle = newangle;
-			this.inst.set_bbox_changed();
-		}
-	};
-	function Cnds() {};
-	Cnds.prototype.IsPinned = function ()
-	{
-		return !!this.pinObject;
-	};
-	behaviorProto.cnds = new Cnds();
-	function Acts() {};
-	Acts.prototype.Pin = function (obj, mode_)
-	{
-		if (!obj)
-			return;
-		var otherinst = obj.getFirstPicked(this.inst);
-		if (!otherinst)
-			return;
-		this.pinObject = otherinst;
-		this.pinAngle = cr.angleTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y) - otherinst.angle;
-		this.pinDist = cr.distanceTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y);
-		this.myStartAngle = this.inst.angle;
-		this.lastKnownAngle = this.inst.angle;
-		this.theirStartAngle = otherinst.angle;
-		this.mode = mode_;
-	};
-	Acts.prototype.Unpin = function ()
-	{
-		this.pinObject = null;
-	};
-	behaviorProto.acts = new Acts();
-	function Exps() {};
-	Exps.prototype.PinnedUID = function (ret)
-	{
-		ret.set_int(this.pinObject ? this.pinObject.uid : -1);
-	};
-	behaviorProto.exps = new Exps();
-}());
-;
-;
-cr.behaviors.Sin = function(runtime)
-{
-	this.runtime = runtime;
-};
-(function ()
-{
-	var behaviorProto = cr.behaviors.Sin.prototype;
-	behaviorProto.Type = function(behavior, objtype)
-	{
-		this.behavior = behavior;
-		this.objtype = objtype;
-		this.runtime = behavior.runtime;
-	};
-	var behtypeProto = behaviorProto.Type.prototype;
-	behtypeProto.onCreate = function()
-	{
-	};
-	behaviorProto.Instance = function(type, inst)
-	{
-		this.type = type;
-		this.behavior = type.behavior;
-		this.inst = inst;				// associated object instance to modify
-		this.runtime = type.runtime;
-		this.i = 0;		// period offset (radians)
-	};
-	var behinstProto = behaviorProto.Instance.prototype;
-	var _2pi = 2 * Math.PI;
-	var _pi_2 = Math.PI / 2;
-	var _3pi_2 = (3 * Math.PI) / 2;
-	behinstProto.onCreate = function()
-	{
-		this.active = (this.properties[0] === 1);
-		this.movement = this.properties[1]; // 0=Horizontal|1=Vertical|2=Size|3=Width|4=Height|5=Angle|6=Opacity|7=Value only
-		this.wave = this.properties[2];		// 0=Sine|1=Triangle|2=Sawtooth|3=Reverse sawtooth|4=Square
-		this.period = this.properties[3];
-		this.period += Math.random() * this.properties[4];								// period random
-		if (this.period === 0)
-			this.i = 0;
-		else
-		{
-			this.i = (this.properties[5] / this.period) * _2pi;								// period offset
-			this.i += ((Math.random() * this.properties[6]) / this.period) * _2pi;			// period offset random
-		}
-		this.mag = this.properties[7];													// magnitude
-		this.mag += Math.random() * this.properties[8];									// magnitude random
-		this.initialValue = 0;
-		this.initialValue2 = 0;
-		this.ratio = 0;
-		this.init();
-	};
-	behinstProto.saveToJSON = function ()
-	{
-		return {
-			"i": this.i,
-			"a": this.active,
-			"mv": this.movement,
-			"w": this.wave,
-			"p": this.period,
-			"mag": this.mag,
-			"iv": this.initialValue,
-			"iv2": this.initialValue2,
-			"r": this.ratio,
-			"lkv": this.lastKnownValue,
-			"lkv2": this.lastKnownValue2
-		};
-	};
-	behinstProto.loadFromJSON = function (o)
-	{
-		this.i = o["i"];
-		this.active = o["a"];
-		this.movement = o["mv"];
-		this.wave = o["w"];
-		this.period = o["p"];
-		this.mag = o["mag"];
-		this.initialValue = o["iv"];
-		this.initialValue2 = o["iv2"] || 0;
-		this.ratio = o["r"];
-		this.lastKnownValue = o["lkv"];
-		this.lastKnownValue2 = o["lkv2"] || 0;
-	};
-	behinstProto.init = function ()
-	{
-		switch (this.movement) {
-		case 0:		// horizontal
-			this.initialValue = this.inst.x;
-			break;
-		case 1:		// vertical
-			this.initialValue = this.inst.y;
-			break;
-		case 2:		// size
-			this.initialValue = this.inst.width;
-			this.ratio = this.inst.height / this.inst.width;
-			break;
-		case 3:		// width
-			this.initialValue = this.inst.width;
-			break;
-		case 4:		// height
-			this.initialValue = this.inst.height;
-			break;
-		case 5:		// angle
-			this.initialValue = this.inst.angle;
-			this.mag = cr.to_radians(this.mag);		// convert magnitude from degrees to radians
-			break;
-		case 6:		// opacity
-			this.initialValue = this.inst.opacity;
-			break;
-		case 7:
-			this.initialValue = 0;
-			break;
-		case 8:		// forwards/backwards
-			this.initialValue = this.inst.x;
-			this.initialValue2 = this.inst.y;
-			break;
-		default:
-;
-		}
-		this.lastKnownValue = this.initialValue;
-		this.lastKnownValue2 = this.initialValue2;
-	};
-	behinstProto.waveFunc = function (x)
-	{
-		x = x % _2pi;
-		switch (this.wave) {
-		case 0:		// sine
-			return Math.sin(x);
-		case 1:		// triangle
-			if (x <= _pi_2)
-				return x / _pi_2;
-			else if (x <= _3pi_2)
-				return 1 - (2 * (x - _pi_2) / Math.PI);
-			else
-				return (x - _3pi_2) / _pi_2 - 1;
-		case 2:		// sawtooth
-			return 2 * x / _2pi - 1;
-		case 3:		// reverse sawtooth
-			return -2 * x / _2pi + 1;
-		case 4:		// square
-			return x < Math.PI ? -1 : 1;
-		};
-		return 0;
-	};
-	behinstProto.tick = function ()
-	{
-		var dt = this.runtime.getDt(this.inst);
-		if (!this.active || dt === 0)
-			return;
-		if (this.period === 0)
-			this.i = 0;
-		else
-		{
-			this.i += (dt / this.period) * _2pi;
-			this.i = this.i % _2pi;
-		}
-		switch (this.movement) {
-		case 0:		// horizontal
-			if (this.inst.x !== this.lastKnownValue)
-				this.initialValue += this.inst.x - this.lastKnownValue;
-			this.inst.x = this.initialValue + this.waveFunc(this.i) * this.mag;
-			this.lastKnownValue = this.inst.x;
-			break;
-		case 1:		// vertical
-			if (this.inst.y !== this.lastKnownValue)
-				this.initialValue += this.inst.y - this.lastKnownValue;
-			this.inst.y = this.initialValue + this.waveFunc(this.i) * this.mag;
-			this.lastKnownValue = this.inst.y;
-			break;
-		case 2:		// size
-			this.inst.width = this.initialValue + this.waveFunc(this.i) * this.mag;
-			this.inst.height = this.inst.width * this.ratio;
-			break;
-		case 3:		// width
-			this.inst.width = this.initialValue + this.waveFunc(this.i) * this.mag;
-			break;
-		case 4:		// height
-			this.inst.height = this.initialValue + this.waveFunc(this.i) * this.mag;
-			break;
-		case 5:		// angle
-			if (this.inst.angle !== this.lastKnownValue)
-				this.initialValue = cr.clamp_angle(this.initialValue + (this.inst.angle - this.lastKnownValue));
-			this.inst.angle = cr.clamp_angle(this.initialValue + this.waveFunc(this.i) * this.mag);
-			this.lastKnownValue = this.inst.angle;
-			break;
-		case 6:		// opacity
-			this.inst.opacity = this.initialValue + (this.waveFunc(this.i) * this.mag) / 100;
-			if (this.inst.opacity < 0)
-				this.inst.opacity = 0;
-			else if (this.inst.opacity > 1)
-				this.inst.opacity = 1;
-			break;
-		case 8:		// forwards/backwards
-			if (this.inst.x !== this.lastKnownValue)
-				this.initialValue += this.inst.x - this.lastKnownValue;
-			if (this.inst.y !== this.lastKnownValue2)
-				this.initialValue2 += this.inst.y - this.lastKnownValue2;
-			this.inst.x = this.initialValue + Math.cos(this.inst.angle) * this.waveFunc(this.i) * this.mag;
-			this.inst.y = this.initialValue2 + Math.sin(this.inst.angle) * this.waveFunc(this.i) * this.mag;
-			this.lastKnownValue = this.inst.x;
-			this.lastKnownValue2 = this.inst.y;
-			break;
-		}
-		this.inst.set_bbox_changed();
-	};
-	behinstProto.onSpriteFrameChanged = function (prev_frame, next_frame)
-	{
-		switch (this.movement) {
-		case 2:	// size
-			this.initialValue *= (next_frame.width / prev_frame.width);
-			this.ratio = next_frame.height / next_frame.width;
-			break;
-		case 3:	// width
-			this.initialValue *= (next_frame.width / prev_frame.width);
-			break;
-		case 4:	// height
-			this.initialValue *= (next_frame.height / prev_frame.height);
-			break;
-		}
-	};
-	function Cnds() {};
-	Cnds.prototype.IsActive = function ()
-	{
-		return this.active;
-	};
-	Cnds.prototype.CompareMovement = function (m)
-	{
-		return this.movement === m;
-	};
-	Cnds.prototype.ComparePeriod = function (cmp, v)
-	{
-		return cr.do_cmp(this.period, cmp, v);
-	};
-	Cnds.prototype.CompareMagnitude = function (cmp, v)
-	{
-		if (this.movement === 5)
-			return cr.do_cmp(this.mag, cmp, cr.to_radians(v));
-		else
-			return cr.do_cmp(this.mag, cmp, v);
-	};
-	Cnds.prototype.CompareWave = function (w)
-	{
-		return this.wave === w;
-	};
-	behaviorProto.cnds = new Cnds();
-	function Acts() {};
-	Acts.prototype.SetActive = function (a)
-	{
-		this.active = (a === 1);
-	};
-	Acts.prototype.SetPeriod = function (x)
-	{
-		this.period = x;
-	};
-	Acts.prototype.SetMagnitude = function (x)
-	{
-		this.mag = x;
-		if (this.movement === 5)	// angle
-			this.mag = cr.to_radians(this.mag);
-	};
-	Acts.prototype.SetMovement = function (m)
-	{
-		if (this.movement === 5)
-			this.mag = cr.to_degrees(this.mag);
-		this.movement = m;
-		this.init();
-	};
-	Acts.prototype.SetWave = function (w)
-	{
-		this.wave = w;
-	};
-	Acts.prototype.SetPhase = function (x)
-	{
-		this.i = (x * _2pi) % _2pi;
-	};
-	Acts.prototype.UpdateInitialState = function ()
-	{
-		this.init();
-	};
-	behaviorProto.acts = new Acts();
-	function Exps() {};
-	Exps.prototype.CyclePosition = function (ret)
-	{
-		ret.set_float(this.i / _2pi);
-	};
-	Exps.prototype.Period = function (ret)
-	{
-		ret.set_float(this.period);
-	};
-	Exps.prototype.Magnitude = function (ret)
-	{
-		if (this.movement === 5)	// angle
-			ret.set_float(cr.to_degrees(this.mag));
-		else
-			ret.set_float(this.mag);
-	};
-	Exps.prototype.Value = function (ret)
-	{
-		ret.set_float(this.waveFunc(this.i) * this.mag);
+		ret.set_float(cr.to_degrees(this.acc));
 	};
 	behaviorProto.exps = new Exps();
 }());
@@ -20946,13 +21575,13 @@ cr.behaviors.bound = function(runtime)
 }());
 ;
 ;
-cr.behaviors.wrap = function(runtime)
+cr.behaviors.destroy = function(runtime)
 {
 	this.runtime = runtime;
 };
 (function ()
 {
-	var behaviorProto = cr.behaviors.wrap.prototype;
+	var behaviorProto = cr.behaviors.destroy.prototype;
 	behaviorProto.Type = function(behavior, objtype)
 	{
 		this.behavior = behavior;
@@ -20973,165 +21602,104 @@ cr.behaviors.wrap = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 	behinstProto.onCreate = function()
 	{
-		this.mode = this.properties[0];		// 0 = wrap to layout, 1 = wrap to viewport
 	};
 	behinstProto.tick = function ()
 	{
-		var inst = this.inst;
-		inst.update_bbox();
-		var bbox = inst.bbox;
-		var layer = inst.layer;
-		var layout = layer.layout;
-		var lbound = 0, rbound = 0, tbound = 0, bbound = 0;
-		if (this.mode === 0)
-		{
-			rbound = layout.width;
-			bbound = layout.height;
-		}
-		else
-		{
-			lbound = layer.viewLeft;
-			rbound = layer.viewRight;
-			tbound = layer.viewTop;
-			bbound = layer.viewBottom;
-		}
-		if (bbox.right < lbound)
-		{
-			inst.x = (rbound - 1) + (inst.x - bbox.left);
-			inst.set_bbox_changed();
-		}
-		else if (bbox.left > rbound)
-		{
-			inst.x = (lbound + 1) - (bbox.right - inst.x);
-			inst.set_bbox_changed();
-		}
-		else if (bbox.bottom < tbound)
-		{
-			inst.y = (bbound - 1) + (inst.y - bbox.top);
-			inst.set_bbox_changed();
-		}
-		else if (bbox.top > bbound)
-		{
-			inst.y = (tbound + 1) - (bbox.bottom - inst.y);
-			inst.set_bbox_changed();
-		}
+		this.inst.update_bbox();
+		var bbox = this.inst.bbox;
+		var layout = this.inst.layer.layout;
+		if (bbox.right < 0 || bbox.bottom < 0 || bbox.left > layout.width || bbox.top > layout.height)
+			this.runtime.DestroyInstance(this.inst);
 	};
 }());
 cr.getObjectRefTable = function () { return [
+	cr.plugins_.Browser,
 	cr.plugins_.Audio,
 	cr.plugins_.Keyboard,
-	cr.plugins_.Mouse,
-	cr.plugins_.Sprite,
-	cr.plugins_.Text,
+	cr.plugins_.Touch,
 	cr.plugins_.TiledBg,
-	cr.behaviors.EightDir,
+	cr.plugins_.Text,
+	cr.plugins_.Sprite,
 	cr.behaviors.bound,
-	cr.behaviors.Sin,
-	cr.behaviors.Fade,
-	cr.behaviors.Pin,
 	cr.behaviors.Bullet,
-	cr.behaviors.wrap,
+	cr.behaviors.destroy,
+	cr.behaviors.Anchor,
+	cr.behaviors.Rotate,
+	cr.behaviors.Flash,
 	cr.system_object.prototype.cnds.IsGroupActive,
-	cr.system_object.prototype.cnds.OnLayoutStart,
-	cr.behaviors.Pin.prototype.acts.Pin,
-	cr.plugins_.Mouse.prototype.acts.SetCursorSprite,
-	cr.plugins_.Audio.prototype.acts.Play,
-	cr.system_object.prototype.acts.SetVar,
-	cr.system_object.prototype.exps.time,
-	cr.plugins_.Text.prototype.acts.SetWebFont,
-	cr.system_object.prototype.acts.SetLayoutEffectEnabled,
-	cr.system_object.prototype.acts.SetLayerVisible,
-	cr.system_object.prototype.acts.SetLayerOpacity,
+	cr.plugins_.Touch.prototype.cnds.IsInTouch,
+	cr.plugins_.Touch.prototype.cnds.IsTouchingObject,
 	cr.system_object.prototype.cnds.Compare,
-	cr.system_object.prototype.exps.renderer,
-	cr.plugins_.Text.prototype.acts.SetText,
-	cr.system_object.prototype.cnds.CompareTime,
-	cr.plugins_.Audio.prototype.acts.SetVolume,
-	cr.system_object.prototype.exps.lerp,
-	cr.plugins_.Text.prototype.acts.SetOpacity,
-	cr.system_object.prototype.exps.layeropacity,
-	cr.system_object.prototype.cnds.TriggerOnce,
-	cr.system_object.prototype.cnds.EveryTick,
-	cr.system_object.prototype.exps.fps,
-	cr.system_object.prototype.exps.objectcount,
-	cr.system_object.prototype.exps.round,
-	cr.system_object.prototype.exps.max,
-	cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
-	cr.system_object.prototype.exps.angle,
+	cr.system_object.prototype.exps.distance,
 	cr.plugins_.Sprite.prototype.exps.X,
 	cr.plugins_.Sprite.prototype.exps.Y,
-	cr.plugins_.Mouse.prototype.exps.X,
-	cr.plugins_.Mouse.prototype.exps.Y,
-	cr.system_object.prototype.exps.clamp,
-	cr.system_object.prototype.exps.distance,
+	cr.plugins_.Touch.prototype.exps.X,
+	cr.plugins_.Touch.prototype.exps.Y,
+	cr.system_object.prototype.exps.dt,
+	cr.plugins_.Sprite.prototype.acts.MoveAtAngle,
+	cr.system_object.prototype.exps.angle,
+	cr.plugins_.Audio.prototype.acts.SetVolume,
+	cr.plugins_.Sprite.prototype.cnds.CompareX,
+	cr.plugins_.Sprite.prototype.acts.SetAnim,
+	cr.system_object.prototype.cnds.Else,
+	cr.plugins_.Sprite.prototype.cnds.IsAnimPlaying,
+	cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+	cr.system_object.prototype.cnds.CompareVar,
+	cr.plugins_.Sprite.prototype.acts.Spawn,
+	cr.plugins_.Sprite.prototype.acts.SetAngle,
+	cr.plugins_.Sprite.prototype.acts.SetX,
+	cr.system_object.prototype.acts.SubVar,
+	cr.behaviors.Flash.prototype.acts.Flash,
+	cr.plugins_.Audio.prototype.acts.Play,
+	cr.system_object.prototype.cnds.OnLayoutStart,
+	cr.plugins_.Sprite.prototype.acts.Destroy,
+	cr.system_object.prototype.acts.Wait,
+	cr.system_object.prototype.acts.SetVar,
+	cr.system_object.prototype.exps.time,
+	cr.system_object.prototype.exps.viewporttop,
+	cr.plugins_.Sprite.prototype.cnds.CompareY,
+	cr.system_object.prototype.exps.viewportbottom,
+	cr.plugins_.Sprite.prototype.acts.SetY,
+	cr.plugins_.Sprite.prototype.cnds.IsOnScreen,
+	cr.system_object.prototype.cnds.Every,
+	cr.system_object.prototype.exps.random,
+	cr.plugins_.Sprite.prototype.exps.Count,
+	cr.system_object.prototype.acts.Scroll,
+	cr.system_object.prototype.cnds.EveryTick,
 	cr.plugins_.Sprite.prototype.acts.SetPos,
+	cr.plugins_.Text.prototype.acts.SetText,
+	cr.plugins_.TiledBg.prototype.acts.SetWidth,
+	cr.plugins_.Sprite.prototype.cnds.OnCollision,
+	cr.plugins_.Sprite.prototype.acts.SubInstanceVar,
+	cr.system_object.prototype.acts.AddVar,
+	cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+	cr.plugins_.Sprite.prototype.acts.RotateTowardPosition,
+	cr.system_object.prototype.cnds.PickNth,
+	cr.plugins_.Sprite.prototype.acts.SetTowardPosition,
+	cr.system_object.prototype.cnds.ForEach,
+	cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+	cr.plugins_.Sprite.prototype.acts.AddInstanceVar,
 	cr.system_object.prototype.exps.cos,
 	cr.system_object.prototype.exps.sin,
-	cr.system_object.prototype.acts.Scroll,
-	cr.plugins_.Sprite.prototype.acts.SetAngle,
-	cr.system_object.prototype.acts.SetLayerScale,
-	cr.system_object.prototype.exps.layerscale,
-	cr.plugins_.Sprite.prototype.acts.SetPosToObject,
-	cr.plugins_.Sprite.prototype.acts.SetWidth,
-	cr.plugins_.Sprite.prototype.acts.SetOpacity,
-	cr.plugins_.Sprite.prototype.exps.Opacity,
-	cr.plugins_.Sprite.prototype.acts.SetVisible,
-	cr.plugins_.Sprite.prototype.exps.Angle,
-	cr.plugins_.Sprite.prototype.acts.SetScale,
-	cr.plugins_.Keyboard.prototype.cnds.IsKeyDown,
-	cr.behaviors.EightDir.prototype.acts.SimulateControl,
-	cr.plugins_.Mouse.prototype.cnds.IsButtonDown,
-	cr.plugins_.Sprite.prototype.cnds.IsBoolInstanceVarSet,
-	cr.plugins_.Sprite.prototype.acts.SetBoolInstanceVar,
-	cr.system_object.prototype.acts.Wait,
-	cr.system_object.prototype.exps.random,
-	cr.system_object.prototype.cnds.Every,
-	cr.plugins_.Sprite.prototype.acts.Spawn,
-	cr.system_object.prototype.cnds.EffectsSupported,
-	cr.plugins_.Sprite.prototype.cnds.IsOverlapping,
-	cr.plugins_.Sprite.prototype.acts.SetSize,
-	cr.system_object.prototype.cnds.Else,
-	cr.behaviors.EightDir.prototype.cnds.CompareSpeed,
-	cr.plugins_.Audio.prototype.acts.PlayByName,
-	cr.system_object.prototype.exps.choose,
-	cr.plugins_.Sprite.prototype.cnds.IsOutsideLayout,
-	cr.plugins_.Sprite.prototype.acts.SetTowardPosition,
-	cr.plugins_.Sprite.prototype.acts.RotateClockwise,
-	cr.plugins_.Sprite.prototype.acts.SubInstanceVar,
-	cr.system_object.prototype.exps.dt,
-	cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
-	cr.system_object.prototype.cnds.ForEach,
-	cr.plugins_.Sprite.prototype.acts.Destroy,
-	cr.system_object.prototype.acts.AddVar,
+	cr.system_object.prototype.cnds.TriggerOnce,
+	cr.system_object.prototype.acts.RestartLayout,
 	cr.system_object.prototype.cnds.Repeat,
 	cr.system_object.prototype.acts.CreateObject,
-	cr.system_object.prototype.exps.layoutwidth,
-	cr.system_object.prototype.exps.layoutheight,
-	cr.system_object.prototype.cnds.While,
-	cr.plugins_.Sprite.prototype.cnds.IsOnScreen,
-	cr.plugins_.Sprite.prototype.acts.RotateTowardPosition,
-	cr.system_object.prototype.exps.min,
-	cr.system_object.prototype.cnds.CompareVar,
-	cr.system_object.prototype.acts.SetLayoutEffectParam,
-	cr.behaviors.Sin.prototype.exps.Value,
-	cr.system_object.prototype.acts.SubVar,
-	cr.plugins_.Audio.prototype.acts.Stop,
-	cr.system_object.prototype.acts.ResetGlobals,
-	cr.system_object.prototype.acts.GoToLayout,
+	cr.system_object.prototype.exps.loopindex,
+	cr.plugins_.Keyboard.prototype.cnds.OnKey,
+	cr.plugins_.Sprite.prototype.cnds.OnAnyAnimFinished,
 	cr.system_object.prototype.exps.windowwidth,
 	cr.system_object.prototype.exps.windowheight,
-	cr.plugins_.Sprite.prototype.acts.SetX,
-	cr.system_object.prototype.exps.scrollx,
-	cr.plugins_.Sprite.prototype.acts.SetY,
-	cr.system_object.prototype.exps.scrolly,
-	cr.plugins_.Sprite.prototype.acts.AddInstanceVar,
+	cr.plugins_.Text.prototype.acts.SetVisible,
+	cr.system_object.prototype.acts.GoToLayout,
+	cr.plugins_.Audio.prototype.acts.Stop,
+	cr.plugins_.Touch.prototype.cnds.OnTouchStart,
+	cr.system_object.prototype.acts.ScrollToObject,
+	cr.plugins_.Text.prototype.acts.SetPos,
 	cr.system_object.prototype.exps.viewportleft,
 	cr.system_object.prototype.exps.viewportright,
-	cr.system_object.prototype.exps.viewporttop,
-	cr.system_object.prototype.exps.viewportbottom,
-	cr.plugins_.Mouse.prototype.acts.SetCursor,
-	cr.plugins_.Sprite.prototype.acts.MoveAtAngle,
-	cr.behaviors.Fade.prototype.acts.StartFade,
-	cr.plugins_.Text.prototype.acts.SetVisible
+	cr.system_object.prototype.cnds.IsMobile,
+	cr.system_object.prototype.exps.find,
+	cr.plugins_.Browser.prototype.exps.UserAgent
 ];};
 
